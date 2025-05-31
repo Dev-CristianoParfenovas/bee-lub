@@ -166,7 +166,7 @@ function Cart(props) {
               console.log("customer:", customer); // Verifique se o customer está definido
               console.log("cartItems:", cartItems); // Verifique se o cartItems está definido
               console.log("employeeId na navegação:", employeeId);
-              navigation.navigate("Pagamento", {
+              navigation.navigate("Pagto", {
                 customer,
                 cartItems,
                 employeeId: employeeId,

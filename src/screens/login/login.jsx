@@ -47,18 +47,26 @@ function Login(props) {
         employee?.name &&
         employee?.companyId !== undefined
       ) {
+        // Limpa dados antigos do AsyncStorage antes de salvar os novos
+        await AsyncStorage.clear();
+        console.log(
+          "Tipo e valor de employee.companyId:",
+          typeof employee.companyId,
+          employee.companyId
+        );
+
         // Salva os dados no AsyncStorage
         await AsyncStorage.multiSet([
-          ["userToken", token],
+          ["authToken", token],
           ["companyId", employee.companyId.toString()],
-          ["employeeName", employee.name],
+          ["userName", employee.name],
           ["isAdmin", employee.is_admin.toString()],
           ["employeeId", employee.id_employee.toString()],
         ]);
 
         // Teste para garantir que os dados foram armazenados corretamente
         const [storedToken, storedCompanyId, storedEmployeeId] =
-          await AsyncStorage.multiGet(["userToken", "companyId", "employeeId"]);
+          await AsyncStorage.multiGet(["authToken", "companyId", "employeeId"]);
         console.log("Token armazenado:", storedToken[1]);
         console.log("CompanyId armazenado:", storedCompanyId[1]);
         console.log("EmployeeId armazenado:", storedEmployeeId[1]);
@@ -75,6 +83,9 @@ function Login(props) {
           employee.companyId,
           employee.is_admin,
           employee.id_employee
+        );
+        console.log(
+          `CompanyID: ${employee.companyId}, ADM: ${employee.is_admin}`
         );
 
         // Exibe uma mensagem de sucesso

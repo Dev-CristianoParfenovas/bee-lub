@@ -49,6 +49,7 @@ export const styles = StyleSheet.create({
     height: 200,
   },
   containerInput: {
+    marginTop: 70,
     marginBottom: 20,
     justifyContent: "center",
   },
@@ -63,6 +64,17 @@ export const styles = StyleSheet.create({
     height: 50,
     width: "100%",
     marginBottom: 10,
+  },
+  rowInputs: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    // borderWidth: 1,
+    gap: 8, // se estiver usando React Native 0.71+ ou Expo SDK 49+
+    marginBottom: 10,
+    // borderColor: "#ccc",
+    borderRadius: 15,
+    height: 50,
+    width: "100%",
   },
   input: {
     flex: 1,
@@ -82,5 +94,59 @@ export const styles = StyleSheet.create({
   text: {
     color: COLORS.white,
     fontSize: FONT_SIZE.xl,
+  },
+
+  halfInput: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    backgroundColor: COLORS.white,
+    borderRadius: 15,
+    paddingHorizontal: 10,
+    height: 50,
+  },
+  inputText: {
+    flex: 1,
+    color: COLORS.black,
+  },
+  categoryItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 10,
+    marginTop: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.white,
+  },
+  categoryName: {
+    fontSize: 16,
+    color: COLORS.white,
+  },
+  containerfunc: {
+    height: 56,
+    width: "100%",
+    paddingHorizontal: 10,
+    alignSelf: "center",
+    borderWidth: 1,
+    borderColor: COLORS.gray3, // Para melhor visualização do campo
+    borderRadius: 10,
+    marginBottom: 5,
+    backgroundColor: COLORS.gray5,
+  },
+  picker: {
+    color: COLORS.gray3,
+    width: "100%",
+    height: "100%", // importante para o picker preencher container verticalmente
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 15,
+    overflow: "hidden", // para aplicar o borderRadius visualmente
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
   },
 });

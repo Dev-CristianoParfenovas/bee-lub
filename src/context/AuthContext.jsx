@@ -51,7 +51,7 @@ export function AuthProvider({ children }) {
     loadAuthState();
   }, []);
 
-  const login = async (token, name, company_id, admin = true, employeeId) => {
+  const login = async (token, name, company_id, admin, employeeId) => {
     try {
       const companyIdToSave = company_id ? company_id.toString() : "";
       const employeeIdToSave = employeeId ? employeeId.toString() : ""; // Converte para string
@@ -108,7 +108,7 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(false);
       setIsAdmin(false); // Reseta o estado de admin
       setCompanyId("");
-      //  setEmployeeId("");
+      setEmployeeId("");
       setUserName(""); // Limpa o nome do usuário
     } catch (error) {
       console.error("Erro ao remover dados de logout:", error);

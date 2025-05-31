@@ -3,7 +3,7 @@ import { COLORS, FONT_SIZE } from "../../constants/theme.js";
 
 export const styles = StyleSheet.create({
   banner: {
-    height: 120, // Proporção do banner na tela
+    height: 120,
     backgroundColor: COLORS.bluebtn,
     justifyContent: "center",
     paddingHorizontal: 16,
@@ -20,28 +20,24 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    top: "10%",
   },
-
   text: {
     color: COLORS.white,
     fontSize: FONT_SIZE.xl,
-    textAlign: "center",
-    marginTop: 55,
     fontWeight: "bold",
-    paddingLeft: 35,
-    paddingRight: 125,
+    marginTop: 55,
   },
   watermark: {
     position: "absolute",
-    width: 350, // Largura desejada para o logo
-    height: 350, // Altura desejada para o logo
-    alignSelf: "center", // Centraliza horizontalmente
-    top: "40%", // Ajusta a posição vertical
+    width: 350,
+    height: 350,
+    alignSelf: "center",
+    top: "40%",
   },
   backButton: {
     marginTop: 55,
   },
-
   image: {
     width: 50,
     height: 50,
@@ -55,21 +51,6 @@ export const styles = StyleSheet.create({
     padding: 15,
     color: COLORS.gray5,
   },
-  containerbanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    top: "10%",
-  },
-  /* pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10, // Arredondar as bordas
-    marginBottom: 16,
-    overflow: "hidden", // Garantir que o conteúdo dentro respeite as bordas arredondadas
-    width: "100%",
-    height: 56,
-  },*/
   title: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -90,13 +71,12 @@ export const styles = StyleSheet.create({
     width: "100%",
   },
   containerbtn: {
-    flexDirection: "row", // Lado a lado
+    flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
     paddingHorizontal: 15,
     marginBottom: 25,
   },
-
   customerCard: {
     padding: 15,
     backgroundColor: COLORS.bluecardcli,
@@ -127,5 +107,11 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 5,
     marginBottom: 8,
+  },
+  noCustomersText: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 16,
+    color: COLORS.gray2,
   },
 });

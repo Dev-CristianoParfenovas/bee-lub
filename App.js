@@ -9,16 +9,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationContainer } from "@react-navigation/native";
 
 function AppContent() {
-  const { isAuthenticated, setIsAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
 
-  useEffect(() => {
+  /*useEffect(() => {
     const checkAuthStatus = async () => {
       const token = await AsyncStorage.getItem("authToken");
       setIsAuthenticated(!!token); // Define como autenticado se o token existir
     };
 
     checkAuthStatus();
-  }, [setIsAuthenticated]);
+  }, [setIsAuthenticated]);*/
 
   return (
     <NavigationContainer>

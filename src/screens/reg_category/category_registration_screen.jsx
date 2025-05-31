@@ -30,7 +30,7 @@ function CategoryRegistrationScreen(props) {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const token = await AsyncStorage.getItem("userToken");
+        const token = await AsyncStorage.getItem("authToken");
         console.log("Token recuperado:", token);
 
         if (!token) {
@@ -69,7 +69,7 @@ function CategoryRegistrationScreen(props) {
 
   const handleDeleteCategory = async (categoryId) => {
     try {
-      const token = await AsyncStorage.getItem("userToken");
+      const token = await AsyncStorage.getItem("authToken");
 
       if (!token) {
         Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
@@ -115,7 +115,7 @@ function CategoryRegistrationScreen(props) {
       }
 
       try {
-        const token = await AsyncStorage.getItem("userToken"); // Recupera o token do AsyncStorage
+        const token = await AsyncStorage.getItem("authToken"); // Recupera o token do AsyncStorage
         if (!token) {
           Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
           return;

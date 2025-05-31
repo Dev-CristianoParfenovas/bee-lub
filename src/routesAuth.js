@@ -21,7 +21,8 @@ import Icon from "react-native-vector-icons/MaterialIcons"; // Certifique-se de 
 import { useAuth } from "./context/AuthContext.jsx"; // Caminho correto
 import SalesDashboard from "./screens/sales_dashboard/sales_dashboard.jsx";
 import LogoutScreen from "./components/logout_screen/logoutscreen.jsx";
-import Vehicle from "./screens/reg_vehicle/vehicle_reg.jsx";
+import Vehicle from "./screens/reg_vehicle/vehicle_reg_screen.jsx";
+import AppStack from "../appstack.js";
 
 const Drawer = createDrawerNavigator();
 
@@ -138,21 +139,6 @@ function RoutesAuth() {
               }}
             />
             <Drawer.Screen
-              name="Cadastrar Produtos"
-              component={ProductsRegistrationScreen}
-              options={{
-                headerShown: false,
-                drawerIcon: ({ color, size }) => (
-                  <Icon
-                    name="inventory"
-                    color={color}
-                    size={size}
-                    style={{ marginLeft: -15 }}
-                  />
-                ),
-              }}
-            />
-            <Drawer.Screen
               name="Cadastrar Categorias"
               component={CategoryRegistrationScreen}
               options={{
@@ -167,6 +153,22 @@ function RoutesAuth() {
                 ),
               }}
             />
+            <Drawer.Screen
+              name="Cadastrar Produtos"
+              component={ProductsRegistrationScreen}
+              options={{
+                headerShown: false,
+                drawerIcon: ({ color, size }) => (
+                  <Icon
+                    name="inventory"
+                    color={color}
+                    size={size}
+                    style={{ marginLeft: -15 }}
+                  />
+                ),
+              }}
+            />
+
             <Drawer.Screen
               name="Cadastrar Veículos"
               component={Vehicle}
@@ -256,6 +258,15 @@ function RoutesAuth() {
                     style={{ marginLeft: -15 }}
                   />
                 ),
+              }}
+            />
+            <Drawer.Screen
+              name="Pagto"
+              component={Payment}
+              options={{
+                headerShown: false,
+                drawerLabel: () => null, // Oculta o nome do item
+                drawerItemStyle: { height: 0 }, // Oculta o espaço do item
               }}
             />
           </>

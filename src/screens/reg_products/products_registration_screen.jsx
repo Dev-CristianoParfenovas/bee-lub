@@ -61,9 +61,17 @@ function ProductsRegistrationScreen() {
       const response = await api.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setCategories(response.data.data);
+
+      // response.data.data deve ser um array ou undefined
+      const categorias = Array.isArray(response.data?.data)
+        ? response.data.data
+        : [];
+
+      setCategories(categorias);
     } catch (error) {
       Alert.alert("Erro", "Não foi possível carregar as categorias.");
+      console.error("Erro ao carregar categorias:", error);
+      setCategories([]); // Garante que a tela não quebre
     }
   };
 
@@ -77,7 +85,7 @@ function ProductsRegistrationScreen() {
   // Função para salvar dados no AsyncStorage
   const storeUserData = async (token, companyId) => {
     try {
-      await AsyncStorage.setItem("userToken", token);
+      await AsyncStorage.setItem("authToken", token);
       await AsyncStorage.setItem("companyId", companyId);
       console.log("Dados salvos com sucesso:", { token, companyId });
     } catch (error) {
@@ -88,7 +96,7 @@ function ProductsRegistrationScreen() {
   // Função para recuperar dados do AsyncStorage
   const initialize = async () => {
     try {
-      const token = await AsyncStorage.getItem("userToken");
+      const token = await AsyncStorage.getItem("authToken");
       const companyId = await AsyncStorage.getItem("companyId");
       console.log("Dados recuperados:", { token, companyId });
 
@@ -100,8 +108,37 @@ function ProductsRegistrationScreen() {
   };
 
   // Função para buscar produtos
-
   const fetchProducts = async (token, companyId) => {
+    setLoading(true);
+    try {
+      const response = await api.get(`/products/${companyId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      console.log("Dados recebidos:", response.data);
+
+      const products = Array.isArray(response.data)
+        ? response.data
+        : response.data.data; // ajuste conforme resposta da API
+
+      if (products && products.length > 0) {
+        setProducts(products);
+      } else {
+        setProducts([]);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar produtos:", error);
+      Alert.alert(
+        "Erro",
+        error.response?.data?.message ||
+          "Não foi possível carregar os produtos."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* const fetchProducts = async (token, companyId) => {
     setLoading(true);
     try {
       const response = await api.get(`/products/${companyId}`, {
@@ -132,7 +169,7 @@ function ProductsRegistrationScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  };*/
 
   // Função para capturar imagem da câmera
   const takePhoto = async () => {
@@ -182,8 +219,13 @@ function ProductsRegistrationScreen() {
   useEffect(() => {
     const initialize = async () => {
       try {
-        const token = await AsyncStorage.getItem("userToken");
+        const token = await AsyncStorage.getItem("authToken");
         const companyId = await AsyncStorage.getItem("companyId");
+
+        console.log("Valores recuperados do AsyncStorage:", {
+          token,
+          companyId,
+        });
 
         if (!token || !companyId) {
           Alert.alert("Erro", "Usuário ou empresa não autenticados.");
@@ -193,8 +235,9 @@ function ProductsRegistrationScreen() {
 
         setUserToken(token);
         setCompanyId(companyId);
-        fetchCategories(token, companyId);
-        fetchProducts(token, companyId);
+
+        await fetchCategories(token, companyId);
+        await fetchProducts(token, companyId);
       } catch (error) {
         console.error("Erro na inicialização:", error);
         Alert.alert("Erro", "Falha ao carregar dados iniciais.");
@@ -258,7 +301,7 @@ function ProductsRegistrationScreen() {
     }
 
     try {
-      const token = await AsyncStorage.getItem("userToken");
+      const token = await AsyncStorage.getItem("authToken");
       if (!token) {
         Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
         return;
@@ -350,7 +393,7 @@ function ProductsRegistrationScreen() {
   //FUNÇÃO REMOVER PRODUTO
   const handleRemoveProduct = async (productId) => {
     try {
-      const token = await AsyncStorage.getItem("userToken");
+      const token = await AsyncStorage.getItem("authToken");
       if (!token) {
         Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
         return;
