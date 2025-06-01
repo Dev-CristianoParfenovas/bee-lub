@@ -76,6 +76,7 @@ export const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 15,
     marginBottom: 25,
+    gap: 10,
   },
   customerCard: {
     padding: 15,
@@ -113,5 +114,10 @@ export const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     color: COLORS.gray2,
+  },
+  backButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    marginLeft: 5,
   },
 });

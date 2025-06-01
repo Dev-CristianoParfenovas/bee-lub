@@ -48,6 +48,8 @@ function EmployeeCustomer(props) {
 
   useFocusEffect(
     React.useCallback(() => {
+      setSearch("");
+      setSelectedCustomer(null);
       if (companyId) fetchCustomers();
     }, [companyId])
   );
@@ -110,7 +112,7 @@ function EmployeeCustomer(props) {
           ]}
         >
           <TextInput
-            placeholder="Nome / Telefone / Placa"
+            placeholder="Nome"
             style={styles.input}
             value={search}
             onChangeText={setSearch}
@@ -158,9 +160,20 @@ function EmployeeCustomer(props) {
       <View style={styles.containerbtn}>
         <Button
           text="Acessar vendas"
-          style={{ width: "100%" }}
+          style={{ width: "48%" }}
           onPress={() =>
             navigation.navigate("Lista de Produtos", {
+              employee: employeeId,
+              customer: selectedCustomer,
+            })
+          }
+          disabled={!selectedCustomer || !employeeId}
+        />
+        <Button
+          text="Acessar veículos"
+          style={{ width: "48%" }}
+          onPress={() =>
+            navigation.navigate("Veículos", {
               employee: employeeId,
               customer: selectedCustomer,
             })

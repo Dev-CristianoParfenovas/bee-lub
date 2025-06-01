@@ -122,7 +122,7 @@ function EmployeeRegistrationScreen(props) {
           source={images.beelogin}
           style={styles.watermark}
           resizeMode="contain"
-          opacity={0.1} // Ajuste para o efeito de marca d'água
+          opacity={0.1} // Ajuste para o efeito de marca d'águ  a
         />
 
         <View style={styles.containerlogo}>

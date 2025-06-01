@@ -22,6 +22,7 @@ import { useAuth } from "./context/AuthContext.jsx"; // Caminho correto
 import SalesDashboard from "./screens/sales_dashboard/sales_dashboard.jsx";
 import LogoutScreen from "./components/logout_screen/logoutscreen.jsx";
 import Vehicle from "./screens/reg_vehicle/vehicle_reg_screen.jsx";
+import VehiclesScreen from "./screens/customerVehiclesScreen/CustomerVehiclesScreen.jsx";
 import AppStack from "../appstack.js";
 
 const Drawer = createDrawerNavigator();
@@ -267,6 +268,15 @@ function RoutesAuth() {
                 headerShown: false,
                 drawerLabel: () => null, // Oculta o nome do item
                 drawerItemStyle: { height: 0 }, // Oculta o espaço do item
+              }}
+            />
+            <Drawer.Screen
+              name="Veículos"
+              component={VehiclesScreen}
+              options={{
+                headerShown: false, // ou false, dependendo se você quer ou não o header
+                drawerLabel: () => null,
+                drawerItemStyle: { height: 0 },
               }}
             />
           </>
