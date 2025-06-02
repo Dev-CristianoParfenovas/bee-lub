@@ -27,12 +27,12 @@ export const styles = StyleSheet.create({
   },
   text: {
     color: COLORS.white,
-    fontSize: FONT_SIZE.xl,
+    fontSize: FONT_SIZE.llg,
     fontWeight: "bold",
   },
   subtitle: {
     color: COLORS.white,
-    fontSize: FONT_SIZE.md,
+    fontSize: FONT_SIZE.sm,
     textAlign: "center",
     marginTop: 32,
   },

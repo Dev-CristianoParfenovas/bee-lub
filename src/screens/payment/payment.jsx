@@ -32,7 +32,7 @@ const Payment = () => {
 
   // Pega os parâmetros da navegação
   const route = useRoute();
-  const { customer, cartItems } = route.params || {}; // Recebe os itens do carrinho
+  const { customer, cartItems, vehicle } = route.params || {}; // Recebe os itens do carrinho
   console.log("employeeId na tela de pagamento:", employeeId);
 
   // Função para calcular subtotal (sem taxas)
@@ -126,7 +126,6 @@ const Payment = () => {
       ]
     );
   };
-
   const processSale = async (customerId, validEmployeeId, pixCode = null) => {
     try {
       const saleData = cartItems.map((item) => ({
@@ -147,6 +146,42 @@ const Payment = () => {
       });
 
       if (response.status === 201) {
+        //GRAVAR OS DADOS DO VEICULOS
+        //const saleId = response.data.sale_id; // Certifique-se de que a API retorna o ID da venda
+        // Extrair o array de vendas retornado pela API
+        const salesArray = response.data.sales;
+        // Pega o ID da primeira venda criada
+        const saleId = salesArray[0].id;
+        // Verifica se há dados do veículo
+        if (vehicle && vehicle.license_plate) {
+          const vehicleServiceData = {
+            sale_id: saleId, //parseInt(saleId, 10),
+            license_plate: vehicle.license_plate,
+            km: parseFloat(vehicle.km) || 0, // km como número com casas decimais
+            company_id: parseInt(companyId, 10),
+            employee_id: parseInt(validEmployeeId, 10),
+            client_id: parseInt(customerId, 10),
+          };
+
+          try {
+            const vehicleServiceResponse = await api.post(
+              `/vehicleservices`,
+              vehicleServiceData,
+              {
+                headers: { Authorization: `Bearer ${authToken}` },
+              }
+            );
+
+            if (vehicleServiceResponse.status === 201) {
+              console.log("Serviço de veículo registrado com sucesso.");
+            } else {
+              console.warn("Falha ao registrar o serviço de veículo.");
+            }
+          } catch (error) {
+            console.error("Erro ao registrar o serviço de veículo:", error);
+          }
+        }
+
         Alert.alert("Venda finalizada!", "A venda foi registrada com sucesso.");
         clearCart();
         navigation.reset({
@@ -316,6 +351,11 @@ const Payment = () => {
       {customer && (
         <View style={styles.customerBanner}>
           <Text style={styles.customerText}>Cliente: {customer.name}</Text>
+          {vehicle?.license_plate && vehicle?.model && (
+            <Text style={styles.customerText}>
+              Placa: {vehicle.license_plate} - Modelo: {vehicle.model}
+            </Text>
+          )}
         </View>
       )}
 

@@ -18,13 +18,13 @@ import { useRoute } from "@react-navigation/native";
 
 function Cart(props) {
   const { cartItems, addToCart, removeFromCart } = useCart();
-
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
   const navigation = useNavigation(); // Hook para acessar a navegação
   const { userName, employeeId } = useAuth();
 
   // Pega o customer e employee da navegação
   const route = useRoute();
-  const { customer } = route.params || {};
+  const { customer, vehicle } = route.params || {};
 
   console.log("Customer:", customer);
   console.log("EmployeeId no contexto:", employeeId);
@@ -98,6 +98,11 @@ function Cart(props) {
       {customer && (
         <View style={styles.customerBanner}>
           <Text style={styles.customerText}>Cliente: {customer.name}</Text>
+          {vehicle?.license_plate && vehicle?.model && (
+            <Text style={styles.customerText}>
+              Placa: {vehicle.license_plate} - Modelo: {vehicle.model}
+            </Text>
+          )}
         </View>
       )}
 
@@ -170,8 +175,10 @@ function Cart(props) {
                 customer,
                 cartItems,
                 employeeId: employeeId,
+                vehicle: selectedVehicle || vehicle,
               });
             }}
+            //disabled={!selectedVehicle}
           />
         </View>
       </View>

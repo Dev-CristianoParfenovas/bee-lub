@@ -18,15 +18,19 @@ export const styles = StyleSheet.create({
     marginTop: 8,
   },
   vehicleCard: {
-    padding: 12,
+    padding: 10,
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 8,
+    backgroundColor: COLORS.bluecardcli,
+    borderRadius: 10,
     marginBottom: 10,
+    marginLeft: 10,
+    marginRight: 10,
+    elevation: 2,
   },
   selectedCard: {
-    borderColor: "#007bff",
-    backgroundColor: "#e6f0ff",
+    borderColor: COLORS.gray5,
+    borderWidth: 2,
   },
   vehicleText: {
     fontSize: 16,
