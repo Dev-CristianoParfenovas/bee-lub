@@ -16,7 +16,7 @@ export const styles = StyleSheet.create({
     gap: 10,
   },
   containerfunc: {
-    height: 60,
+    height: 56,
     width: "95%",
     paddingHorizontal: 10,
     alignSelf: "center",
@@ -125,14 +125,5 @@ export const styles = StyleSheet.create({
   employeeText: {
     marginLeft: 15,
     justifyContent: "center",
-  },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    paddingHorizontal: 10,
-    borderRadius: 5,
-    backgroundColor: "#fff", // importante se o fundo da tela for branco também
-    marginVertical: 10,
   },
 });

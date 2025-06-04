@@ -1,14 +1,5 @@
-// SalesDashboard.js
-
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  Image,
-  TextInput,
-} from "react-native";
+import { View, Text, TouchableOpacity, FlatList, Image } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { styles } from "./sales_dashboard.style.js";
 import images from "../../constants/icons.js";
@@ -22,9 +13,6 @@ import { useAuth } from "../../context/AuthContext.jsx";
 const SalesDashboard = () => {
   const [selectedEmployee, setSelectedEmployee] = useState("all");
   const [selectedClient, setSelectedClient] = useState("all");
-  const [vehiclePlate, setVehiclePlate] = useState("");
-  const [vehicles, setVehicles] = useState([]);
-  const [selectedVehicle, setSelectedVehicle] = useState("all");
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
@@ -69,39 +57,6 @@ const SalesDashboard = () => {
     }
   };
 
-  // Buscar veículos do cliente selecionado
-  // Atualize a função fetchVehicles para usar o authToken do contexto
-  const fetchVehicles = async (clientId) => {
-    if (!clientId || clientId === "all") {
-      setVehicles([]);
-      setVehiclePlate("");
-      return;
-    }
-
-    try {
-      const response = await api.get(`/vehicles/${companyId}/${clientId}`, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-
-      if (response.data && Array.isArray(response.data.data)) {
-        setVehicles(response.data.data);
-        setVehiclePlate(""); // Reseta filtro de placa ao buscar novos veículos
-      } else {
-        setVehicles([]);
-        setVehiclePlate("");
-        console.error(
-          "Veículos não encontrados ou formato inesperado:",
-          response.data
-        );
-      }
-    } catch (error) {
-      console.error("Erro ao buscar veículos:", error);
-      setVehicles([]);
-      setVehiclePlate("");
-    }
-  };
-
-  /*040625
   const fetchSales = async () => {
     try {
       const startOfDay = new Date(startDate);
@@ -120,167 +75,14 @@ const SalesDashboard = () => {
         url += `&client_id=${selectedClient}`;
       }
 
-      if (vehiclePlate.trim()) {
-        url += `&plate=${vehiclePlate.trim()}`;
-      }
-
       console.log("URL para fetchSales:", url);
 
       const response = await api.get(url, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 
+      // Log para inspecionar os dados retornados
       console.log("Dados filtrados retornados:", response.data);
-
-      if (response.data && Array.isArray(response.data)) {
-        const salesData = response.data.reduce((acc, sale) => {
-          const { employee_id, employee_name, total_price } = sale;
-
-          if (!acc[employee_id]) {
-            acc[employee_id] = {
-              employeeId: employee_id,
-              name: employee_name || "Nome não informado",
-              totalSales: 0,
-            };
-          }
-          acc[employee_id].totalSales += parseFloat(total_price) || 0;
-          return acc;
-        }, {});
-
-        setFilteredData(Object.values(salesData));
-      } else {
-        console.warn("Formato inesperado nos dados de vendas:", response.data);
-        setFilteredData([]);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar vendas:", error);
-      setFilteredData([]);
-    }
-  };*/
-
-  /*040625 const fetchSales = async () => {
-    try {
-      const startOfDay = new Date(startDate);
-      startOfDay.setUTCHours(0, 0, 0, 0);
-
-      const endOfDay = new Date(endDate);
-      endOfDay.setUTCHours(23, 59, 59, 999);
-
-      let url = `/sales/${companyId}/date-range?startDate=${startOfDay.toISOString()}&endDate=${endOfDay.toISOString()}`;
-
-      if (selectedEmployee && selectedEmployee !== "all") {
-        url += `&employee_id=${selectedEmployee}`;
-      }
-
-      if (selectedClient && selectedClient !== "all") {
-        url += `&client_id=${selectedClient}`;
-      }
-
-      // ✅ Novo filtro por veículo (id)
-      //  if (selectedVehicle && selectedVehicle !== "all") {
-       // url += `&vehicle_id=${selectedVehicle}`;
-      //}
-      if (
-        selectedVehicle &&
-        selectedVehicle !== "all" &&
-        selectedVehicle !== "none"
-      ) {
-        url += `&vehicle_id=${selectedVehicle}`;
-      }
-
-      console.log("URL para fetchSales:", url);
-
-      const response = await api.get(url, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-
-      console.log("Dados filtrados retornados:", response.data);
-
-      if (response.data && Array.isArray(response.data)) {
-        const salesData = response.data.reduce((acc, sale) => {
-          const { employee_id, employee_name, total_price } = sale;
-
-          if (!acc[employee_id]) {
-            acc[employee_id] = {
-              employeeId: employee_id,
-              name: employee_name || "Nome não informado",
-              totalSales: 0,
-            };
-          }
-          acc[employee_id].totalSales += parseFloat(total_price) || 0;
-          return acc;
-        }, {});
-
-        setFilteredData(Object.values(salesData));
-      } else {
-        console.warn("Formato inesperado nos dados de vendas:", response.data);
-        setFilteredData([]);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar vendas:", error);
-      setFilteredData([]);
-    }
-  };*/
-
-  const fetchSales = async () => {
-    try {
-      const startOfDay = new Date(startDate);
-      startOfDay.setUTCHours(0, 0, 0, 0);
-
-      const endOfDay = new Date(endDate);
-      endOfDay.setUTCHours(23, 59, 59, 999);
-
-      let response;
-
-      // Se um veículo específico foi selecionado, faz a requisição pela placa
-      if (
-        selectedVehicle &&
-        selectedVehicle !== "all" &&
-        selectedVehicle !== "none"
-      ) {
-        // 🟡 Primeiro, precisamos encontrar a placa do veículo selecionado
-        // const vehicle = vehicles.find((v) => v.id === selectedVehicle);
-        const vehicle = vehicles.find((v) => v.id === Number(selectedVehicle));
-
-        console.log("Vehicle: " + vehicle);
-
-        if (!vehicle) {
-          console.warn("Veículo não encontrado.");
-          setFilteredData([]);
-          return;
-        }
-
-        // Só aviso, mas não bloqueio a requisição
-        if (!vehicle.license_plate) {
-          console.warn("Veículo encontrado, mas placa ausente.");
-        }
-
-        const url = `/sales/${companyId}/vehicle/${vehicle.id}`;
-        console.log("URL para fetch por ID do veículo:", url);
-
-        response = await api.get(url, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
-      } else {
-        // Rota normal com filtros de data, funcionário e cliente
-        let url = `/sales/${companyId}/date-range?startDate=${startOfDay.toISOString()}&endDate=${endOfDay.toISOString()}`;
-
-        if (selectedEmployee && selectedEmployee !== "all") {
-          url += `&employee_id=${selectedEmployee}`;
-        }
-
-        if (selectedClient && selectedClient !== "all") {
-          url += `&client_id=${selectedClient}`;
-        }
-
-        console.log("URL para fetchSales geral:", url);
-
-        response = await api.get(url, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
-      }
-
-      console.log("Dados retornados:", response.data);
 
       if (response.data && Array.isArray(response.data)) {
         const salesData = response.data.reduce((acc, sale) => {
@@ -308,42 +110,14 @@ const SalesDashboard = () => {
     }
   };
 
-  // Carregar funcionários e clientes uma vez ao montar
   useEffect(() => {
+    console.log("Selected Employee Changed:", selectedEmployee);
+    console.log("Employees List Loaded:", employees);
+    console.log("Selected Client Changed:", selectedClient);
     fetchEmployees();
     fetchClients();
-  }, []);
-
-  // Atualizar veículos quando o cliente selecionado mudar
-  useEffect(() => {
-    if (selectedClient && selectedClient !== "all") {
-      fetchVehicles(selectedClient);
-    } else {
-      setVehicles([]);
-      setSelectedVehicle("none"); // Resetar seleção ao limpar veículos
-    }
-  }, [selectedClient]);
-
-  // Atualizar vendas quando filtros mudam
-  useEffect(() => {
     fetchSales();
-  }, [
-    selectedEmployee,
-    selectedClient,
-    startDate,
-    endDate,
-    vehiclePlate,
-    selectedVehicle,
-  ]);
-
-  // Ajustar seleção de veículo quando a lista de veículos muda
-  useEffect(() => {
-    if (vehicles.length > 0) {
-      setSelectedVehicle("all");
-    } else {
-      setSelectedVehicle("none");
-    }
-  }, [vehicles]);
+  }, [selectedEmployee, selectedClient, startDate, endDate]);
 
   return (
     <View style={styles.container}>
@@ -369,33 +143,38 @@ const SalesDashboard = () => {
         <Picker
           selectedValue={selectedEmployee}
           onValueChange={(value) => {
+            console.log("Picker Employee Value:", value); // Verificar valor selecionado
             setSelectedEmployee(value);
           }}
         >
           <Picker.Item key="all" label="Todos" value="all" />
-          {employees.map((employee) => (
-            <Picker.Item
-              key={`employee-${employee.id_employee}`}
-              label={employee.name}
-              value={employee.id_employee}
-            />
-          ))}
+          {employees.map((employee) => {
+            console.log("Employee Item:", employee); // Log de cada funcionário
+            return (
+              <Picker.Item
+                key={`employee-${employee.id_employee}`}
+                label={employee.name}
+                value={employee.id_employee}
+              />
+            );
+          })}
         </Picker>
       </View>
 
       <Text style={styles.sectionTitle}>Filtrar por Cliente</Text>
       <View style={styles.containerfunc}>
         <Picker
-          style={styles.picker}
           selectedValue={selectedClient}
-          onValueChange={(itemValue) => setSelectedClient(itemValue)}
+          onValueChange={(itemValue) => {
+            setSelectedClient(itemValue); // Atualiza o estado do cliente
+          }}
         >
-          <Picker.Item label="Todos" value="" />
+          <Picker.Item key="all" label="Todos" value="all" />
           {clientsError ? (
             <Picker.Item
               key="error"
               label="Erro ao carregar clientes"
-              value=""
+              value="all"
             />
           ) : (
             clients.map((client) => (
@@ -403,31 +182,6 @@ const SalesDashboard = () => {
                 key={`client-${client.id_client}`}
                 label={client.name}
                 value={client.id_client}
-              />
-            ))
-          )}
-        </Picker>
-      </View>
-
-      <Text style={styles.sectionTitle}>Filtrar por Placa do Veículo</Text>
-      <View style={styles.containerfunc}>
-        <Picker
-          selectedValue={selectedVehicle}
-          onValueChange={(itemValue) => setSelectedVehicle(itemValue)}
-        >
-          <Picker.Item key="all" label="Todos" value="all" />
-          {vehicles.length === 0 ? (
-            <Picker.Item
-              key="empty"
-              label="Nenhum veículo disponível"
-              value="none"
-            />
-          ) : (
-            vehicles.map((vehicle) => (
-              <Picker.Item
-                key={vehicle.id_vehicle}
-                label={`${vehicle.license_plate} - ${vehicle.model}`}
-                value={String(vehicle.id_vehicle)}
               />
             ))
           )}
