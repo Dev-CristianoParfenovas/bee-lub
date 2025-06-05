@@ -157,11 +157,14 @@ const Payment = () => {
           const vehicleServiceData = {
             sale_id: saleId, //parseInt(saleId, 10),
             license_plate: vehicle.license_plate,
+            model: vehicle.model,
             km: parseFloat(vehicle.km) || 0, // km como número com casas decimais
             company_id: parseInt(companyId, 10),
             employee_id: parseInt(validEmployeeId, 10),
             client_id: parseInt(customerId, 10),
           };
+
+          console.log("Dados do veículo: " + vehicle.model);
 
           try {
             const vehicleServiceResponse = await api.post(

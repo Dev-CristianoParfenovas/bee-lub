@@ -74,7 +74,7 @@ const SalesDashboard = () => {
   const fetchVehicles = async (clientId) => {
     if (!clientId || clientId === "all") {
       setVehicles([]);
-      setVehiclePlate("");
+      // setVehiclePlate("");
       return;
     }
 
@@ -88,7 +88,7 @@ const SalesDashboard = () => {
         setVehiclePlate(""); // Reseta filtro de placa ao buscar novos veículos
       } else {
         setVehicles([]);
-        setVehiclePlate("");
+        // setVehiclePlate("");
         console.error(
           "Veículos não encontrados ou formato inesperado:",
           response.data
@@ -97,7 +97,7 @@ const SalesDashboard = () => {
     } catch (error) {
       console.error("Erro ao buscar veículos:", error);
       setVehicles([]);
-      setVehiclePlate("");
+      // setVehiclePlate("");
     }
   };
 
@@ -230,55 +230,41 @@ const SalesDashboard = () => {
       const endOfDay = new Date(endDate);
       endOfDay.setUTCHours(23, 59, 59, 999);
 
-      let response;
+      // Monta a URL base com datas
+      let url = `/sales/${companyId}/date-range?startDate=${startOfDay.toISOString()}&endDate=${endOfDay.toISOString()}`;
 
-      // Se um veículo específico foi selecionado, faz a requisição pela placa
+      // Verifica se veículo foi selecionado e adiciona filtro
       if (
         selectedVehicle &&
         selectedVehicle !== "all" &&
         selectedVehicle !== "none"
       ) {
-        // 🟡 Primeiro, precisamos encontrar a placa do veículo selecionado
-        // const vehicle = vehicles.find((v) => v.id === selectedVehicle);
-        const vehicle = vehicles.find((v) => v.id === Number(selectedVehicle));
-
-        console.log("Vehicle: " + vehicle);
-
+        // Opcional: garantir que o veículo exista no array local
+        const vehicle = vehicles.find(
+          (v) => v.id_vehicle === Number(selectedVehicle)
+        );
         if (!vehicle) {
           console.warn("Veículo não encontrado.");
           setFilteredData([]);
           return;
         }
-
-        // Só aviso, mas não bloqueio a requisição
-        if (!vehicle.license_plate) {
-          console.warn("Veículo encontrado, mas placa ausente.");
-        }
-
-        const url = `/sales/${companyId}/vehicle/${vehicle.id}`;
-        console.log("URL para fetch por ID do veículo:", url);
-
-        response = await api.get(url, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
-      } else {
-        // Rota normal com filtros de data, funcionário e cliente
-        let url = `/sales/${companyId}/date-range?startDate=${startOfDay.toISOString()}&endDate=${endOfDay.toISOString()}`;
-
-        if (selectedEmployee && selectedEmployee !== "all") {
-          url += `&employee_id=${selectedEmployee}`;
-        }
-
-        if (selectedClient && selectedClient !== "all") {
-          url += `&client_id=${selectedClient}`;
-        }
-
-        console.log("URL para fetchSales geral:", url);
-
-        response = await api.get(url, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
+        url += `&vehicle_id=${vehicle.id_vehicle}`;
       }
+
+      // Outros filtros opcionais
+      if (selectedEmployee && selectedEmployee !== "all") {
+        url += `&employee_id=${selectedEmployee}`;
+      }
+
+      if (selectedClient && selectedClient !== "all") {
+        url += `&client_id=${selectedClient}`;
+      }
+
+      console.log("URL para fetchSales:", url);
+
+      const response = await api.get(url, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
 
       console.log("Dados retornados:", response.data);
 
@@ -293,6 +279,7 @@ const SalesDashboard = () => {
               totalSales: 0,
             };
           }
+
           acc[employee_id].totalSales += parseFloat(total_price) || 0;
           return acc;
         }, {});
@@ -332,7 +319,7 @@ const SalesDashboard = () => {
     selectedClient,
     startDate,
     endDate,
-    vehiclePlate,
+    //vehiclePlate,
     selectedVehicle,
   ]);
 
