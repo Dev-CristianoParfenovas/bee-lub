@@ -154,8 +154,14 @@ const Payment = () => {
         const saleId = salesArray[0].id;
         // Verifica se há dados do veículo
         if (vehicle && vehicle.license_plate) {
+          // ✅ VALIDAÇÃO DO ID DO VEÍCULO
+          if (!vehicle.id_vehicle || isNaN(vehicle.id_vehicle)) {
+            console.warn("ID do veículo inválido");
+            return;
+          }
           const vehicleServiceData = {
             sale_id: saleId, //parseInt(saleId, 10),
+            vehicle_id: parseInt(vehicle.id_vehicle, 10),
             license_plate: vehicle.license_plate,
             model: vehicle.model,
             km: parseFloat(vehicle.km) || 0, // km como número com casas decimais
@@ -164,7 +170,12 @@ const Payment = () => {
             client_id: parseInt(customerId, 10),
           };
 
-          console.log("Dados do veículo: " + vehicle.model);
+          console.log(
+            "Dados do veículo: " +
+              vehicle.model +
+              " ID do veículo: " +
+              vehicle.id_vehicle
+          );
 
           try {
             const vehicleServiceResponse = await api.post(
