@@ -15,12 +15,13 @@ import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useCart } from "../../context/CartContext.jsx";
 import { useRoute } from "@react-navigation/native";
+import api from "../../constants/api.js";
 
 function Cart(props) {
   const { cartItems, addToCart, removeFromCart } = useCart();
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const navigation = useNavigation(); // Hook para acessar a navegação
-  const { userName, employeeId } = useAuth();
+  const { userName, employeeId, authToken } = useAuth();
 
   // Pega o customer e employee da navegação
   const route = useRoute();
@@ -34,10 +35,37 @@ function Cart(props) {
     cartItems.reduce((total, item) => total + item.quantity, 0);
 
   // Função para incrementar a quantidade
-  const incrementQuantity = (id) => {
+  /*const incrementQuantity = (id) => {
     const item = cartItems.find((item) => item.id === id);
     if (item) {
       addToCart(item, 1); // Passa 1 para incrementar a quantidade
+    }
+  };*/
+
+  const incrementQuantity = async (id, company_id) => {
+    const item = cartItems.find((item) => item.id === id);
+    if (!item) return;
+
+    try {
+      // const token = await AsyncStorage.getItem("token");
+      console.log("IncrementQuantity chamado com:", { id, company_id });
+      const response = await api.get(`/stock/${company_id}/${id}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      const stockAvailable = response.data.quantity; // <-- Correto aqui
+      const currentQuantity = item.quantity;
+
+      if (currentQuantity < stockAvailable) {
+        addToCart(item, 1); // aumenta a quantidade no carrinho
+      } else {
+        alert("Quantidade em estoque insuficiente!");
+      }
+    } catch (error) {
+      console.error("Erro ao buscar estoque:", error);
+      alert("Erro ao verificar estoque. Tente novamente.");
     }
   };
 
@@ -142,7 +170,9 @@ function Cart(props) {
                     <Text style={styles.quantity}>{item.quantity}</Text>
                     <TouchableOpacity
                       style={styles.btnSmall}
-                      onPress={() => incrementQuantity(item.id)}
+                      onPress={() =>
+                        incrementQuantity(item.id, item.company_id)
+                      }
                     >
                       <Text style={styles.btnText}>+</Text>
                     </TouchableOpacity>
