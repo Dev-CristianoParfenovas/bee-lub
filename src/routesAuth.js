@@ -15,6 +15,7 @@ import DrawerScreen from "./screens/drawer_screen/drawer_screen.jsx";
 import Products from "./screens/products/products.jsx";
 import Cart from "./screens/cart/cart.jsx";
 import Payment from "./screens/payment/payment.jsx";
+import QuickStockScreen from "./screens/quick_stock/quick_stock_screen.jsx";
 import { COLORS } from "./constants/theme.js";
 import { TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons"; // Certifique-se de instalar o react-native-vector-icons
@@ -239,6 +240,21 @@ function RoutesAuth() {
                 drawerIcon: ({ color, size }) => (
                   <Icon
                     name="bar-chart"
+                    color={color}
+                    size={size}
+                    style={{ marginLeft: -15 }}
+                  />
+                ),
+              }}
+            />
+            <Drawer.Screen
+              name="Estoque Rápido"
+              component={QuickStockScreen}
+              options={{
+                headerShown: false,
+                drawerIcon: ({ color, size }) => (
+                  <Icon
+                    name="check-box"
                     color={color}
                     size={size}
                     style={{ marginLeft: -15 }}

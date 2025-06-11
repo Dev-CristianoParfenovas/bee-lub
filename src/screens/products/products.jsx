@@ -252,7 +252,7 @@ function Products(props) {
             </CameraView>
           </>
         ) : (
-          <>
+          <View>
             {/* Botão para abrir a câmera */}
             <TouchableOpacity onPress={() => setIsCameraOpen(true)}>
               <Text style={styles.cameraIcon}>📷</Text>
@@ -266,7 +266,7 @@ function Products(props) {
               onChangeText={(text) => setBarcode(text)} // Atualiza o estado com o valor digitado
               editable={!isScannerActive} // Campo somente leitura após o escaneamento
             />
-          </>
+          </View>
         )}
       </View>
 
