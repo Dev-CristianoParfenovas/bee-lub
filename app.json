@@ -29,7 +29,6 @@
       ],
       "package": "com.anonymous.beelub"
     },
-
     "web": {
       "favicon": "./assets/favicon.png"
     },
@@ -41,7 +40,8 @@
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
           "recordAudioAndroid": true
         }
-      ]
+      ],
+      "expo-barcode-scanner"
     ]
   }
 }

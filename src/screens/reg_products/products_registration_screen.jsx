@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Image,
   View,
@@ -20,7 +20,7 @@ import Button from "../../components/button/button.jsx";
 import ButtonSearch from "../../components/button_search/button_search.jsx";
 import { COLORS } from "../../constants/theme.js";
 import api from "../../constants/api.js";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useAuth, AuthProvider } from "../../context/AuthContext.jsx"; // Importa o AuthContext
 import { Picker } from "@react-native-picker/picker";
 import getStoredData from "../../utils/getStoredData"; // Importa o utilitário de AsyncStorage
@@ -54,6 +54,8 @@ function ProductsRegistrationScreen() {
   const { hasPermission, requestPermission, isLoading } = useCameraPermission();
   const [scannedCode, setScannedCode] = useState();
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [refreshProducts, setRefreshProducts] = useState(false);
+
   // Função para buscar categorias
   const fetchCategories = async (token, companyId) => {
     try {
@@ -138,39 +140,6 @@ function ProductsRegistrationScreen() {
     }
   };
 
-  /* const fetchProducts = async (token, companyId) => {
-    setLoading(true);
-    try {
-      const response = await api.get(`/products/${companyId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      console.log("Dados recebidos:", response.data);
-
-      // Verifica se a resposta é um array e coloca o primeiro item (produto mais recente) no topo
-      if (Array.isArray(response.data)) {
-        const updatedProducts = [response.data[0], ...response.data.slice(1)];
-        setProducts(updatedProducts); // Atualiza a lista de produtos
-      } else {
-        // Caso a resposta seja um objeto, verifique o campo de produtos (ajuste conforme necessário)
-        const updatedProducts = [
-          response.data.products[0],
-          ...response.data.products.slice(1),
-        ];
-        setProducts(updatedProducts);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar produtos:", error);
-      Alert.alert(
-        "Erro",
-        error.response?.data?.message ||
-          "Não foi possível carregar os produtos."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };*/
-
   // Função para capturar imagem da câmera
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -246,6 +215,12 @@ function ProductsRegistrationScreen() {
 
     initialize();
   }, []);
+
+  useEffect(() => {
+    if (userToken && companyId) {
+      fetchProducts(userToken, companyId);
+    }
+  }, [refreshProducts, userToken, companyId]);
 
   // Função para buscar produtos com debounce
   const handleSearchProduct = debounce(async () => {
@@ -364,6 +339,7 @@ function ProductsRegistrationScreen() {
       setCfop("");
       setQuantity("");
       setSelectedCategory("");
+      setRefreshProducts((prev) => !prev);
     } catch (error) {
       console.error("Erro na requisição:", error);
       const errorMessage =
@@ -416,6 +392,7 @@ function ProductsRegistrationScreen() {
 
       if (response.status === 200) {
         Alert.alert("Sucesso", response.data.message);
+        setRefreshProducts((prev) => !prev);
         fetchProducts(token, companyId); // Forçar nova requisição para buscar todos os produtos
       } else {
         throw new Error("Erro ao excluir produto");
@@ -472,6 +449,18 @@ function ProductsRegistrationScreen() {
   useEffect(() => {
     console.log("hasPermission:", hasPermission); // Verifique se o estado está sendo atualizado corretamente
   }, [hasPermission]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!userToken || !companyId) {
+        console.warn("Token ou CompanyId indefinido no foco da tela");
+        return;
+      }
+
+      fetchProducts(userToken, companyId);
+      fetchCategories(userToken, companyId);
+    }, [userToken, companyId])
+  );
 
   return (
     <View style={styles.container}>

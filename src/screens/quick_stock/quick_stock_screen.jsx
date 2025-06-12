@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
   TextInput,
-  Button,
   Alert,
   Animated,
   Easing,
@@ -11,14 +10,14 @@ import {
   Platform,
   StatusBar,
   TouchableOpacity,
+  FlatList,
 } from "react-native";
 import { styles } from "./quick_stock_screen.js";
 import { CameraView } from "expo-camera";
 import { useCameraPermission } from "../../context/CameraPermissionContext";
 import api from "../../constants/api.js";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import TextBox from "../../components/textbox/textbox.jsx";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 function QuickStockScreen() {
@@ -28,17 +27,21 @@ function QuickStockScreen() {
   const [quantity, setQuantity] = useState("");
   const [isScannerActive, setIsScannerActive] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [scanned, setScannedCode] = useState(false);
-  const { authToken, companyId, employeeId } = useAuth();
-
-  const company_id = 1; // Substitua conforme necessário
+  const [scanned, setScanned] = useState(false);
+  const [updatedProducts, setUpdatedProducts] = useState([]); // <-- lista de produtos atualizados
+  const { authToken, companyId } = useAuth();
 
   const animation = useRef(new Animated.Value(0)).current;
 
+  useFocusEffect(
+    useCallback(() => {
+      // Ao entrar na tela, limpa a lista
+      setUpdatedProducts([]);
+    }, [])
+  );
+
   useEffect(() => {
-    if (!hasPermission) {
-      requestPermission();
-    }
+    if (!hasPermission) requestPermission();
   }, []);
 
   useEffect(() => {
@@ -62,36 +65,20 @@ function QuickStockScreen() {
     }
   }, [isScannerActive]);
 
-  const handleOpenScanner = async () => {
-    if (isLoading) return;
+  const handleBarcodeScanned = async (scannedData) => {
+    if (scanned) return; // Evita múltiplas leituras
+    setScanned(true);
 
-    if (hasPermission) {
-      setIsScannerActive(true);
-      setScannedCode(false);
-    } else {
-      await requestPermission();
-      if (!hasPermission) {
-        Alert.alert(
-          "Permissão Negada",
-          "É necessário conceder permissão para acessar a câmera."
-        );
-      }
-    }
-  };
+    console.log("Código escaneado:", scannedData);
+    setBarcode(scannedData);
 
-  const handleBarcodeScanned = (barcode) => {
-    const scannedProduct = products.find(
-      (product) => product.barcode === barcode
-    );
+    await handleUpdateStock(scannedData);
 
-    if (scannedProduct) {
-      handleAddToCart(scannedProduct); // Adiciona o produto ao carrinho
-    } else {
-      Alert.alert(
-        "Produto não encontrado",
-        "Nenhum produto corresponde a este código de barras."
-      );
-    }
+    setTimeout(() => {
+      setScanned(false);
+      setIsCameraOpen(false);
+      setIsScannerActive(false);
+    }, 1000);
   };
 
   const handleUpdateStock = async (scannedBarcode = barcode) => {
@@ -104,13 +91,6 @@ function QuickStockScreen() {
     }
 
     try {
-      console.log("Dados enviados:", {
-        quantity: Number(quantity),
-        barcode: scannedBarcode,
-        company_id: companyId,
-      });
-
-      // const token = await AsyncStorage.getItem("authToken");
       const response = await api.put(
         "/update-stock-by-barcode",
         {
@@ -125,13 +105,31 @@ function QuickStockScreen() {
         }
       );
 
+      const updatedProduct = response.data.data;
+      // Exemplo: { barcode: '123456789', quantity: 15, name: 'Produto X' }
+
       Alert.alert(
         "Sucesso",
-        `Estoque atualizado! Nova quantidade: ${response.data.data.quantity}`
+        `Estoque atualizado! Nova quantidade: ${updatedProduct.quantity}`
       );
+
+      // Atualiza a lista de produtos atualizados:
+      setUpdatedProducts((prev) => {
+        // Se o produto já existe na lista, atualiza, senão adiciona novo
+        const index = prev.findIndex(
+          (p) => p.barcode === updatedProduct.barcode
+        );
+        if (index >= 0) {
+          const newList = [...prev];
+          newList[index] = updatedProduct;
+          return newList;
+        } else {
+          return [updatedProduct, ...prev];
+        }
+      });
+
       setQuantity("");
       setBarcode("");
-      setScannedCode(false);
     } catch (error) {
       console.error(error);
       Alert.alert(
@@ -154,11 +152,32 @@ function QuickStockScreen() {
           { justifyContent: "center", alignItems: "center" },
         ]}
       >
-        <ActivityIndicator size="large" color={COLORS.white} />
+        <ActivityIndicator size="large" color="#fff" />
         <Text style={styles.text}>Carregando permissões...</Text>
       </View>
     );
   }
+
+  // Render item para FlatList dos produtos atualizados
+  const renderProductItem = ({ item }) => (
+    <View
+      style={{
+        padding: 12,
+        marginVertical: 6,
+        marginHorizontal: 20,
+        backgroundColor: "#222",
+        borderRadius: 8,
+      }}
+    >
+      <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
+        {item.name || "Produto sem nome"}
+      </Text>
+      <Text style={{ color: "#ccc" }}>Código de Barras: {item.barcode}</Text>
+      <Text style={{ color: "#ccc" }}>
+        Quantidade em estoque: {item.quantity}
+      </Text>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -180,23 +199,12 @@ function QuickStockScreen() {
       <View style={styles.searchContainer}>
         {isCameraOpen ? (
           <>
-            {/* Log para depuração */}
-            {console.log("Camera Open: ", isCameraOpen)}
-
-            {/* Oculta o StatusBar no Android quando a câmera está aberta */}
             {Platform.OS === "android" && <StatusBar hidden />}
 
             <CameraView
               style={styles.camera}
               facing="back"
-              onBarcodeScanned={({ data }) => {
-                console.log("Escaneado:", data); // Exibe o código escaneado no console
-                setScannedCode(data);
-                setBarcode(data);
-                handleUpdateStock(data); // chama atualização direto
-                setIsScannerActive(false);
-                setIsCameraOpen(false);
-              }}
+              onBarcodeScanned={({ data }) => handleBarcodeScanned(data)}
               barCodeScannerSettings={{
                 barCodeTypes: [
                   "ean13",
@@ -205,10 +213,9 @@ function QuickStockScreen() {
                   "code128",
                   "ean8",
                   "pdf417",
-                ], // Tipos de códigos de barras suportados
+                ],
               }}
             >
-              {/* Botão para fechar a câmera */}
               <TouchableOpacity
                 style={styles.closeButton}
                 onPress={() => {
@@ -222,24 +229,46 @@ function QuickStockScreen() {
           </>
         ) : (
           <>
-            {/* Botão para abrir a câmera */}
             <TouchableOpacity onPress={() => setIsCameraOpen(true)}>
               <Text style={styles.cameraIcon}>📷</Text>
             </TouchableOpacity>
 
-            {/* Campo de texto para o código de barras */}
-
             <TextBox
               placeholder="Código de Barras"
               style={styles.searchInput}
-              value={barcode} // Exibe o código escaneado
-              onChangeText={(text) => setBarcode(text)} // Atualiza o estado com o valor digitado
-              editable={!isScannerActive} // Campo somente leitura após o escaneamento
+              value={barcode}
+              onChangeText={setBarcode}
+              editable={!isScannerActive}
             />
           </>
         )}
       </View>
+
+      {/* FlatList com os produtos atualizados */}
+      {updatedProducts.length > 0 && (
+        <>
+          <Text
+            style={{
+              color: "#fff",
+              fontSize: 18,
+              fontWeight: "bold",
+              marginTop: 30,
+              marginLeft: 20,
+            }}
+          >
+            Produtos Atualizados
+          </Text>
+          <FlatList
+            data={updatedProducts}
+            keyExtractor={(item) => item.barcode}
+            renderItem={renderProductItem}
+            style={{ width: "100%", marginTop: 10 }}
+            showsVerticalScrollIndicator={false}
+          />
+        </>
+      )}
     </View>
   );
 }
+
 export default QuickStockScreen;
