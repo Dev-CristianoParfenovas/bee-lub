@@ -32,9 +32,38 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = () => setCartItems([]);
 
+  // Função para agrupar itens do carrinho por cliente e veículo
+  const groupCartItems = (cartItems) => {
+    const groups = [];
+
+    cartItems.forEach((item) => {
+      const { customer, vehicle } = item; // supondo que o item tenha essas propriedades
+
+      // Tenta encontrar grupo com cliente e veículo iguais
+      let group = groups.find(
+        (g) => g.customer?.id === customer?.id && g.vehicle?.id === vehicle?.id
+      );
+
+      if (!group) {
+        group = { customer, vehicle, items: [] };
+        groups.push(group);
+      }
+
+      group.items.push(item);
+    });
+
+    return groups;
+  };
+
   return (
     <CartContext.Provider
-      value={{ cartItems, addToCart, removeFromCart, clearCart }}
+      value={{
+        cartItems,
+        addToCart,
+        removeFromCart,
+        clearCart,
+        groupCartItems,
+      }}
     >
       {children}
     </CartContext.Provider>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,73 +11,87 @@ import { Ionicons } from "@expo/vector-icons";
 import { styles } from "./cart.style.js";
 import { products } from "../../constants/dados.js";
 import ButtonPaymentCart from "../../components/button_payment_cart/button_payment_cart.jsx";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useCart } from "../../context/CartContext.jsx";
 import { useRoute } from "@react-navigation/native";
 import api from "../../constants/api.js";
 
 function Cart(props) {
-  const { cartItems, addToCart, removeFromCart } = useCart();
+  const { cartItems, addToCart, removeFromCart, groupCartItems } = useCart();
   const [selectedVehicle, setSelectedVehicle] = useState(null);
-  const navigation = useNavigation(); // Hook para acessar a navegação
+  const navigation = useNavigation();
   const { userName, employeeId, authToken } = useAuth();
 
-  // Pega o customer e employee da navegação
   const route = useRoute();
-  const { customer, vehicle } = route.params || {};
 
-  console.log("Customer:", customer);
-  console.log("EmployeeId no contexto:", employeeId);
+  const [customer, setCustomer] = useState(null);
+  const [vehicle, setVehicle] = useState(null);
 
-  // Função para calcular o total de itens no carrinho
+  // Atualiza customer/vehicle sempre que a tela for focada
+  useFocusEffect(
+    useCallback(() => {
+      const params = route.params;
+
+      if (params?.customer || params?.vehicle) {
+        setCustomer(params.customer || null);
+        setVehicle(params.vehicle || null);
+      } else {
+        // Se nenhum parâmetro foi enviado, limpa os dados
+        setCustomer(null);
+        setVehicle(null);
+      }
+    }, [route.params])
+  );
+
+  // Zera customer e vehicle se carrinho for esvaziado
+  useEffect(() => {
+    if (cartItems.length === 0) {
+      setCustomer(null);
+      setVehicle(null);
+
+      // Remove dados antigos da rota
+      navigation.setParams({
+        customer: null,
+        vehicle: null,
+      });
+    }
+  }, [cartItems]);
+
+  // Calcula total de itens
   const getCartCount = () =>
     cartItems.reduce((total, item) => total + item.quantity, 0);
-
-  // Função para incrementar a quantidade
-  /*const incrementQuantity = (id) => {
-    const item = cartItems.find((item) => item.id === id);
-    if (item) {
-      addToCart(item, 1); // Passa 1 para incrementar a quantidade
-    }
-  };*/
 
   const incrementQuantity = async (id, company_id) => {
     const item = cartItems.find((item) => item.id === id);
     if (!item) return;
 
     try {
-      // const token = await AsyncStorage.getItem("token");
-      console.log("IncrementQuantity chamado com:", { id, company_id });
       const response = await api.get(`/stock/${company_id}/${id}`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
       });
 
-      const stockAvailable = response.data.quantity; // <-- Correto aqui
-      const currentQuantity = item.quantity;
-
-      if (currentQuantity < stockAvailable) {
-        addToCart(item, 1); // aumenta a quantidade no carrinho
+      const stockAvailable = response.data.quantity;
+      if (item.quantity < stockAvailable) {
+        addToCart(item, 1);
       } else {
         alert("Quantidade em estoque insuficiente!");
       }
     } catch (error) {
       console.error("Erro ao buscar estoque:", error);
-      alert("Erro ao verificar estoque. Tente novamente.");
+      alert("Erro ao verificar estoque.");
     }
   };
 
-  // Função para decrementar a quantidade
   const decrementQuantity = (id) => {
     const item = cartItems.find((item) => item.id === id);
     if (item) {
-      addToCart(item, -1); // Passa -1 para reduzir a quantidade
+      addToCart(item, -1);
     }
   };
 
-  // Função para remover o item do carrinho
   const removeItem = (id) => {
     Alert.alert("Remover item", "Deseja realmente remover este item?", [
       { text: "Cancelar" },
@@ -90,7 +104,6 @@ function Cart(props) {
     ]);
   };
 
-  // Calcular o valor total do carrinho
   const calculateTotal = () =>
     cartItems.reduce((total, item) => {
       const price = parseFloat(item.price.replace("R$", "").replace(",", "."));

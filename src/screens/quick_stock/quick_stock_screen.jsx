@@ -19,6 +19,8 @@ import api from "../../constants/api.js";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import TextBox from "../../components/textbox/textbox.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
+import { COLORS } from "../../constants/theme.js";
 
 function QuickStockScreen() {
   const navigation = useNavigation();
@@ -181,8 +183,28 @@ function QuickStockScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.text, { fontWeight: "bold", marginBottom: 20 }]}>
-        Atualizar Estoque Rápido
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <MaterialIcons name="arrow-back" size={24} color={COLORS.white} />
+        <Text style={styles.backButtonText}>Voltar</Text>
+      </TouchableOpacity>
+
+      {/* Título */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Atualizar Estoque</Text>
+      </View>
+
+      <Text
+        style={{
+          color: COLORS.yellowbee,
+          textAlign: "center",
+          marginVertical: 10,
+        }}
+      >
+        Por favor, insira a qtde. em seguida clique no icone da camera para
+        escanear o produto.
       </Text>
 
       <View style={styles.inputWithIcon}>
