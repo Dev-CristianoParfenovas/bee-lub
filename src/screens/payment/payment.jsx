@@ -179,7 +179,7 @@ const Payment = () => {
 
           try {
             const vehicleServiceResponse = await api.post(
-              `/vehicleservices`,
+              `/vehicle_services`,
               vehicleServiceData,
               {
                 headers: { Authorization: `Bearer ${authToken}` },

@@ -61,7 +61,7 @@ function ClientRegistrationScreen(props) {
           company_id: companyId,
         });
 
-        const response = await api.post("/client", {
+        const response = await api.post("/clients", {
           name,
           email,
           phone,

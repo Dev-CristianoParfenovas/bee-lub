@@ -51,7 +51,7 @@ function EmployeeRegistrationScreen(props) {
           company_id: companyId,
         });
 
-        const response = await api.post("/employee", {
+        const response = await api.post("/employees", {
           name,
           email,
           password,

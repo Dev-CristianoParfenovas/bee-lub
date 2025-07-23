@@ -24,6 +24,7 @@ import SalesDashboard from "./screens/sales_dashboard/sales_dashboard.jsx";
 import LogoutScreen from "./components/logout_screen/logoutscreen.jsx";
 import Vehicle from "./screens/reg_vehicle/vehicle_reg_screen.jsx";
 import VehiclesScreen from "./screens/customerVehiclesScreen/CustomerVehiclesScreen.jsx";
+import EmployeeList from "./screens/employee_list/employee_list.jsx";
 import AppStack from "../appstack.js";
 
 const Drawer = createDrawerNavigator();
@@ -209,6 +210,21 @@ function RoutesAuth() {
                 drawerIcon: ({ color, size }) => (
                   <Icon
                     name="store"
+                    color={color}
+                    size={size}
+                    style={{ marginLeft: -15 }}
+                  />
+                ),
+              }}
+            />
+            <Drawer.Screen
+              name="Acessar Funcionários"
+              component={EmployeeList}
+              options={{
+                headerShown: false,
+                drawerIcon: ({ color, size }) => (
+                  <Icon
+                    name="badge"
                     color={color}
                     size={size}
                     style={{ marginLeft: -15 }}

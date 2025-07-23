@@ -94,7 +94,7 @@ function QuickStockScreen() {
 
     try {
       const response = await api.put(
-        "/update-stock-by-barcode",
+        "/products/stock/updatestockbarcode",
         {
           quantity: Number(quantity),
           barcode: scannedBarcode,
@@ -108,6 +108,7 @@ function QuickStockScreen() {
       );
 
       const updatedProduct = response.data.data;
+      console.log("Estoque rapido: " + updatedProduct);
       // Exemplo: { barcode: '123456789', quantity: 15, name: 'Produto X' }
 
       Alert.alert(

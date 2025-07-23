@@ -107,6 +107,14 @@ export const styles = StyleSheet.create({
     marginHorizontal: 28,
     color: COLORS.white,
   },
+  containerCstTrib: {
+    marginHorizontal: 10,
+    color: COLORS.white,
+  },
+  containerCsosnTrib: {
+    marginHorizontal: 128,
+    color: COLORS.white,
+  },
 
   inputHalf: {
     flex: 1,

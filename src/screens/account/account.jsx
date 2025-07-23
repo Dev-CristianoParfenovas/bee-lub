@@ -50,7 +50,7 @@ function Account(props) {
           is_active: true,
         });
 
-        const response = await api.post("/companyemployee", {
+        const response = await api.post("/company/companyemployee", {
           name,
           email,
           password,
@@ -62,12 +62,15 @@ function Account(props) {
         console.log("Dados da resposta:", response.data);
 
         if (response.status === 200 || response.status === 201) {
-          const { token, message } = response.data;
+          const { token, message, company_id, employee } = response.data;
 
-          console.log("token:", token);
+          console.log("Token:", token);
 
-          if (!token) {
-            console.error("Token ausente na resposta da API:", response.data);
+          if (!token || !employee?.id_employee || !company_id) {
+            console.error(
+              "Dados incompletos na resposta da API:",
+              response.data
+            );
             Alert.alert(
               "Erro",
               "Conta criada, mas ocorreu um problema ao autenticar automaticamente."
@@ -80,8 +83,8 @@ function Account(props) {
             message || "Você foi registrado com sucesso."
           );
 
-          // Autentica o usuário usando o token
-          await login(token, name, true); // Use o `name` inserido no formulário, já que a API não retorna
+          // ✅ Autentica o usuário com os dados corretos
+          await login(token, name, company_id, true, employee.id_employee);
         } else {
           console.error("Resposta inesperada da API:", response);
           Alert.alert(

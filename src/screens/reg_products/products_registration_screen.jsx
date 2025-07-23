@@ -38,6 +38,8 @@ function ProductsRegistrationScreen() {
   const [aliquota, setAliquota] = useState("");
   const [ncm, setNcm] = useState("");
   const [cfop, setCfop] = useState("");
+  const [cst, setCst] = useState("");
+  const [csosn, setCsosn] = useState("");
   const [search, setSearch] = useState("");
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -293,6 +295,8 @@ function ProductsRegistrationScreen() {
         ncm,
         aliquota,
         cfop,
+        cst,
+        csosn,
         stock: formattedQuantity,
         category_id: selectedCategory,
         company_id: companyId,
@@ -337,6 +341,8 @@ function ProductsRegistrationScreen() {
       setNcm("");
       setAliquota("");
       setCfop("");
+      setCst("");
+      setCsosn("");
       setQuantity("");
       setSelectedCategory("");
       setRefreshProducts((prev) => !prev);
@@ -684,12 +690,48 @@ function ProductsRegistrationScreen() {
             <View style={[styles.inputWithIcon, styles.inputHalfTrib]}>
               <TextBox
                 onfocus={false}
-                leftIcon="gavel"
+                leftIcon="receipt"
                 placeholder="Cfop"
                 placeholderTextColor={COLORS.gray3}
                 value={cfop}
                 onChangeText={(text) => setCfop(text)}
                 style={[styles.input, , styles.fontTrib]}
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+          <View style={styles.containerRowTrib}>
+            <Text style={styles.containerCstTrib}>CST</Text>
+            <Text style={styles.containerCsosnTrib}>CSOSN</Text>
+          </View>
+          <View style={styles.containerRow}>
+            <View style={[styles.inputWithIcon, styles.inputHalf]}>
+              <MaterialIcons
+                name="description"
+                size={24}
+                color={COLORS.gray3}
+              />
+              <TextBox
+                // maskType="money"
+                onfocus={false}
+                placeholder="CST"
+                placeholderTextColor={COLORS.gray3}
+                value={cst}
+                onChangeText={(text) => setCst(text)}
+                style={[styles.input, errors.price ? styles.inputError : null]}
+                keyboardType="numeric"
+              />
+            </View>
+
+            <View style={[styles.inputWithIcon, styles.inputHalf]}>
+              <MaterialIcons name="settings" size={24} color={COLORS.gray3} />
+              <TextBox
+                onfocus={false}
+                placeholder="CSOSN"
+                placeholderTextColor={COLORS.gray3}
+                value={csosn}
+                onChangeText={setCsosn}
+                style={styles.input}
                 keyboardType="numeric"
               />
             </View>
@@ -733,6 +775,8 @@ function ProductsRegistrationScreen() {
                       setAliquota(item.aliquota);
                       setNcm(item.ncm);
                       setCfop(item.cfop);
+                      setCst(item.cst);
+                      setCsosn(item.csosn);
                       setQuantity(item.quantity?.toString() || "0");
                       setSelectedCategory(item.category_id ?? null);
                     }}

@@ -32,7 +32,7 @@ function Login(props) {
       console.log("Dados enviados para login:", { email, password });
 
       // Envia a requisição para login
-      const response = await api.post("/employee/login", { email, password });
+      const response = await api.post("/employees/login", { email, password });
 
       console.log("Resposta da API:", response.data);
 
