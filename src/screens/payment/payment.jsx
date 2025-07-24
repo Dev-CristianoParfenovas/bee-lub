@@ -126,7 +126,68 @@ const Payment = () => {
       ]
     );
   };
+
   const processSale = async (customerId, validEmployeeId, pixCode = null) => {
+    try {
+      const hasVehicle =
+        vehicle &&
+        vehicle.license_plate &&
+        vehicle.id_vehicle &&
+        !isNaN(vehicle.id_vehicle);
+
+      const saleData = cartItems.map((item) => ({
+        company_id: companyId,
+        product_id: item.id,
+        id_client: customerId,
+        employee_id: validEmployeeId,
+        quantity: parseFloat(item.quantity) || 1,
+        total_price: parseFloat(item.price) || 0,
+        sale_date: new Date().toISOString(),
+        tipovenda: pixCode ? 2 : 1, // Define o tipo de venda (1=Normal, 2=Pix)
+        ...(hasVehicle && {
+          vehicleInfo: {
+            vehicle_id: parseInt(vehicle.id_vehicle, 10),
+            license_plate: vehicle.license_plate,
+            model: vehicle.model,
+            km: parseFloat(vehicle.km) || 0,
+          },
+        }),
+      }));
+
+      console.log("Enviando dados da venda:", saleData);
+
+      const response = await api.post(`/sales/${companyId}`, saleData, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+
+      if (response.status === 201) {
+        Alert.alert("Venda finalizada!", "A venda foi registrada com sucesso.");
+        clearCart();
+        navigation.reset({
+          index: 0,
+          routes: [
+            {
+              name: "DrawerScreen",
+              params: {
+                saleData,
+                customer: null,
+                cartItems: [],
+                total: 0,
+                subtotal: 0,
+              },
+            },
+          ],
+        });
+      } else {
+        Alert.alert("Erro", "Houve um problema ao registrar a venda.");
+      }
+    } catch (error) {
+      console.error("Erro ao processar a venda:", error);
+      Alert.alert("Erro", "Não foi possível concluir a venda.");
+    }
+  };
+
+  /*const processSale = async (customerId, validEmployeeId, pixCode = null) => {
     try {
       const saleData = cartItems.map((item) => ({
         company_id: companyId,
@@ -220,7 +281,7 @@ const Payment = () => {
       console.error("Erro ao processar a venda:", error);
       Alert.alert("Erro", "Não foi possível concluir a venda.");
     }
-  };
+  };*/
 
   const copyToClipboard = () => {
     Clipboard.setString(qrCodeData);
