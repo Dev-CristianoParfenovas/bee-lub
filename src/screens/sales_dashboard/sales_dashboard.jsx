@@ -101,127 +101,6 @@ const SalesDashboard = () => {
     }
   };
 
-  /*040625
-  const fetchSales = async () => {
-    try {
-      const startOfDay = new Date(startDate);
-      startOfDay.setUTCHours(0, 0, 0, 0);
-
-      const endOfDay = new Date(endDate);
-      endOfDay.setUTCHours(23, 59, 59, 999);
-
-      let url = `/sales/${companyId}/date-range?startDate=${startOfDay.toISOString()}&endDate=${endOfDay.toISOString()}`;
-
-      if (selectedEmployee && selectedEmployee !== "all") {
-        url += `&employee_id=${selectedEmployee}`;
-      }
-
-      if (selectedClient && selectedClient !== "all") {
-        url += `&client_id=${selectedClient}`;
-      }
-
-      if (vehiclePlate.trim()) {
-        url += `&plate=${vehiclePlate.trim()}`;
-      }
-
-      console.log("URL para fetchSales:", url);
-
-      const response = await api.get(url, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-
-      console.log("Dados filtrados retornados:", response.data);
-
-      if (response.data && Array.isArray(response.data)) {
-        const salesData = response.data.reduce((acc, sale) => {
-          const { employee_id, employee_name, total_price } = sale;
-
-          if (!acc[employee_id]) {
-            acc[employee_id] = {
-              employeeId: employee_id,
-              name: employee_name || "Nome não informado",
-              totalSales: 0,
-            };
-          }
-          acc[employee_id].totalSales += parseFloat(total_price) || 0;
-          return acc;
-        }, {});
-
-        setFilteredData(Object.values(salesData));
-      } else {
-        console.warn("Formato inesperado nos dados de vendas:", response.data);
-        setFilteredData([]);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar vendas:", error);
-      setFilteredData([]);
-    }
-  };*/
-
-  /*040625 const fetchSales = async () => {
-    try {
-      const startOfDay = new Date(startDate);
-      startOfDay.setUTCHours(0, 0, 0, 0);
-
-      const endOfDay = new Date(endDate);
-      endOfDay.setUTCHours(23, 59, 59, 999);
-
-      let url = `/sales/${companyId}/date-range?startDate=${startOfDay.toISOString()}&endDate=${endOfDay.toISOString()}`;
-
-      if (selectedEmployee && selectedEmployee !== "all") {
-        url += `&employee_id=${selectedEmployee}`;
-      }
-
-      if (selectedClient && selectedClient !== "all") {
-        url += `&client_id=${selectedClient}`;
-      }
-
-      // ✅ Novo filtro por veículo (id)
-      //  if (selectedVehicle && selectedVehicle !== "all") {
-       // url += `&vehicle_id=${selectedVehicle}`;
-      //}
-      if (
-        selectedVehicle &&
-        selectedVehicle !== "all" &&
-        selectedVehicle !== "none"
-      ) {
-        url += `&vehicle_id=${selectedVehicle}`;
-      }
-
-      console.log("URL para fetchSales:", url);
-
-      const response = await api.get(url, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-
-      console.log("Dados filtrados retornados:", response.data);
-
-      if (response.data && Array.isArray(response.data)) {
-        const salesData = response.data.reduce((acc, sale) => {
-          const { employee_id, employee_name, total_price } = sale;
-
-          if (!acc[employee_id]) {
-            acc[employee_id] = {
-              employeeId: employee_id,
-              name: employee_name || "Nome não informado",
-              totalSales: 0,
-            };
-          }
-          acc[employee_id].totalSales += parseFloat(total_price) || 0;
-          return acc;
-        }, {});
-
-        setFilteredData(Object.values(salesData));
-      } else {
-        console.warn("Formato inesperado nos dados de vendas:", response.data);
-        setFilteredData([]);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar vendas:", error);
-      setFilteredData([]);
-    }
-  };*/
-
   const fetchSales = async () => {
     try {
       const startOfDay = new Date(startDate);
@@ -482,6 +361,15 @@ const SalesDashboard = () => {
           </TouchableOpacity>
         </View>
       </View>
+
+      <TouchableOpacity
+        style={styles.detailButton}
+        onPress={() =>
+          navigation.navigate("SaleDetail", { employeeId: item.employeeId })
+        }
+      >
+        <Text style={styles.detailButtonText}>Ver Detalhes</Text>
+      </TouchableOpacity>
 
       <View style={styles.orderSummary}>
         <FlatList

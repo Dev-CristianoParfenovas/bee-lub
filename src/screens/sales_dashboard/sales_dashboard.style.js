@@ -135,4 +135,17 @@ export const styles = StyleSheet.create({
     backgroundColor: "#fff", // importante se o fundo da tela for branco também
     marginVertical: 10,
   },
+  detailButton: {
+    backgroundColor: COLORS.bluebtn, // azul forte
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  detailButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });
