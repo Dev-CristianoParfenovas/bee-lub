@@ -137,15 +137,15 @@ export const styles = StyleSheet.create({
   },
   detailButton: {
     backgroundColor: COLORS.bluebtn, // azul forte
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 5,
+    paddingHorizontal: 5,
     borderRadius: 8,
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 5,
   },
   detailButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: "bold",
   },
 });

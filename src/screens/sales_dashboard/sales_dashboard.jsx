@@ -211,6 +211,15 @@ const SalesDashboard = () => {
     }
   }, [vehicles]);
 
+  // Derivar nome do cliente selecionado
+  const selectedClientName =
+    clients.find((c) => c.id_client === selectedClient)?.name || "";
+
+  // Derivar placa do veículo selecionado
+  const selectedVehiclePlate =
+    vehicles.find((v) => String(v.id_vehicle) === selectedVehicle)
+      ?.license_plate || "";
+
   return (
     <View style={styles.container}>
       <Image
@@ -362,15 +371,6 @@ const SalesDashboard = () => {
         </View>
       </View>
 
-      <TouchableOpacity
-        style={styles.detailButton}
-        onPress={() =>
-          navigation.navigate("SaleDetail", { employeeId: item.employeeId })
-        }
-      >
-        <Text style={styles.detailButtonText}>Ver Detalhes</Text>
-      </TouchableOpacity>
-
       <View style={styles.orderSummary}>
         <FlatList
           data={filteredData}
@@ -383,6 +383,23 @@ const SalesDashboard = () => {
               <Text style={styles.itemPrice}>
                 R$ {item.totalSales.toFixed(2)}
               </Text>
+
+              <TouchableOpacity
+                style={styles.detailButton}
+                onPress={() =>
+                  navigation.navigate("SaleDetail", {
+                    saleId: item.id, // certifique-se que "item" vem do map ou FlatList
+                    companyId,
+                    startDate: startDate.toISOString(), // converte para string
+                    endDate: endDate.toISOString(), // converte para string
+                    employeeName: item.employee_name,
+                    clientName: selectedClientName,
+                    vehiclePlate: selectedVehiclePlate,
+                  })
+                }
+              >
+                <Text style={styles.detailButtonText}>Ver Detalhes</Text>
+              </TouchableOpacity>
             </View>
           )}
           ListEmptyComponent={() => (
