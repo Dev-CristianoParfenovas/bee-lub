@@ -142,6 +142,7 @@ const Payment = () => {
         employee_id: validEmployeeId,
         quantity: parseFloat(item.quantity) || 1,
         total_price: parseFloat(item.price) || 0,
+        unit_price: parseFloat(item.unit_price) || 0,
         sale_date: new Date().toISOString(),
         tipovenda: pixCode ? 2 : 1, // Define o tipo de venda (1=Normal, 2=Pix)
         ...(hasVehicle && {

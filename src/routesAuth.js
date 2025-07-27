@@ -24,7 +24,7 @@ import SalesDashboard from "./screens/sales_dashboard/sales_dashboard.jsx";
 import LogoutScreen from "./components/logout_screen/logoutscreen.jsx";
 import Vehicle from "./screens/reg_vehicle/vehicle_reg_screen.jsx";
 import VehiclesScreen from "./screens/customerVehiclesScreen/CustomerVehiclesScreen.jsx";
-import SaleDetailScreen from "./screens/saledetailscreen/saledetailscreen.jsx";
+import SalesDetailScreen from "./screens/saledetailscreen/saledetailscreen.jsx";
 import EmployeeList from "./screens/employee_list/employee_list.jsx";
 import AppStack from "../appstack.js";
 
@@ -314,7 +314,7 @@ function RoutesAuth() {
             />
             <Drawer.Screen
               name="SaleDetail"
-              component={SaleDetailScreen}
+              component={SalesDetailScreen}
               options={{
                 headerShown: false, // ou false, dependendo se você quer ou não o header
                 drawerLabel: () => null,

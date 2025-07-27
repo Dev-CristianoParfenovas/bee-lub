@@ -3,43 +3,63 @@ import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
+import { styles } from "./saledetailscreen.js";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
-import api from "../../constants/api.js"; // ajuste o caminho se necessário
 import { useAuth } from "../../context/AuthContext.jsx";
+import api from "../../constants/api.js";
+import { Ionicons } from "@expo/vector-icons";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { useNavigation } from "@react-navigation/native";
+
+//FUNÇÃO PARA FORMATAR DATAS
+function formatDate(dateString) {
+  if (!dateString) return "N/A";
+  const d = new Date(dateString);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
 
 export default function SalesDetailScreen({ route }) {
+  console.log("route.params:", route.params);
   const {
     companyId,
-    saleId,
+    saleGroupId,
     employeeName,
     clientName,
+    vehicleModel,
     vehiclePlate,
     startDate,
     endDate,
   } = route.params;
 
+  const formattedStartDate = formatDate(startDate);
+  const formattedEndDate = formatDate(endDate);
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { authToken } = useAuth();
+  const navigation = useNavigation();
 
   const fetchProducts = async () => {
-    console.log("companyId:", companyId);
-    console.log("saleId:", saleId);
-
     try {
       const response = await api.get(
-        `/sales/${companyId}/products-by-sale/${saleId}`,
+        `/sales/${companyId}/products-by-sale/${saleGroupId}`,
         {
           headers: {
-            Authorization: `Bearer ${authToken}`, // <- tem que ter o token correto aqui
+            Authorization: `Bearer ${authToken}`,
           },
         }
       );
-      setProducts(response.data);
+      console.log("API response:", response.data);
+      // Verifica se tem `.data` dentro de `.data`, senão usa direto
+      const items = response.data?.data ?? response.data ?? [];
+      setProducts(items);
     } catch (error) {
       console.error("Erro ao buscar produtos da venda:", error);
     } finally {
@@ -49,10 +69,10 @@ export default function SalesDetailScreen({ route }) {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [saleGroupId, companyId]);
 
   const totalGeral = products.reduce(
-    (acc, item) => acc + Number(item.total_price),
+    (acc, item) => acc + Number(item.total_price ?? 0),
     0
   );
 
@@ -63,10 +83,10 @@ export default function SalesDetailScreen({ route }) {
           <h1>Produtos da Venda</h1>
           <p><strong>Funcionário:</strong> ${employeeName || "N/A"}</p>
           <p><strong>Cliente:</strong> ${clientName || "N/A"}</p>
-          <p><strong>Placa:</strong> ${vehiclePlate || "N/A"}</p>
-          <p><strong>Período:</strong> ${startDate || "N/A"} até ${
-      endDate || "N/A"
+          <p><strong>Veículo:</strong> ${vehiclePlate || "N/A"} - ${
+      vehicleModel || "N/A"
     }</p>
+          <p><strong>Período:</strong> ${formattedStartDate} até ${formattedEndDate}</p>
           <hr />
           ${products
             .map(
@@ -90,14 +110,33 @@ export default function SalesDetailScreen({ route }) {
     await Sharing.shareAsync(uri);
   };
 
+  const renderItem = ({ item }) => (
+    <View style={{ borderBottomWidth: 1, paddingVertical: 8 }}>
+      <Text style={{ fontWeight: "bold" }}>{item.product_name}</Text>
+      <Text>Quantidade: {item.quantity}</Text>
+      <Text>Preço: R$ {Number(item.unit_price).toFixed(2)}</Text>
+      <Text>Total: R$ {Number(item.total_price).toFixed(2)}</Text>
+    </View>
+  );
+
   return (
-    <View style={{ flex: 1, padding: 16 }}>
+    <View style={styles.container}>
+      <View style={styles.containerbanner}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back-outline" size={30} color="white" />
+        </TouchableOpacity>
+        <Icon style={styles.icone} name="chart-bar" size={24} color="#FFF" />
+        <Text style={styles.text}> Detalhe de Vendas</Text>
+      </View>
+
       {loading ? (
         <ActivityIndicator size="large" />
       ) : (
         <>
-          {/* Cabeçalho com informações extras */}
-          <View style={{ marginBottom: 16 }}>
+          <View style={styles.containerdados}>
             <Text style={{ fontWeight: "bold" }}>
               Funcionário: {employeeName || "N/A"}
             </Text>
@@ -105,54 +144,32 @@ export default function SalesDetailScreen({ route }) {
               Cliente: {clientName || "N/A"}
             </Text>
             <Text style={{ fontWeight: "bold" }}>
-              Placa: {vehiclePlate || "N/A"}
+              Veículo: {vehiclePlate || "N/A"} - {vehicleModel || "N/A"}
+            </Text>
+            <Text style={{ fontWeight: "bold" }}>
+              Período: {new Date(startDate).toLocaleDateString("pt-BR")} até{" "}
+              {new Date(endDate).toLocaleDateString("pt-BR")}
             </Text>
           </View>
 
-          {/* Lista de produtos */}
-          <FlatList
-            data={products}
-            keyExtractor={(item, index) => String(index)}
-            renderItem={({ item }) => (
-              <View style={{ borderBottomWidth: 1, paddingVertical: 8 }}>
-                <Text style={{ fontWeight: "bold" }}>{item.product_name}</Text>
-                <Text>Quantidade: {item.quantity}</Text>
-                <Text>Preço: R$ {Number(item.unit_price).toFixed(2)}</Text>
-                <Text>Total: R$ {Number(item.total_price).toFixed(2)}</Text>
-              </View>
-            )}
-          />
-
-          <Text
-            style={{
-              marginTop: 16,
-              fontSize: 18,
-              fontWeight: "bold",
-              textAlign: "right",
-            }}
-          >
-            Total da Venda: R$ {totalGeral.toFixed(2)}
-          </Text>
-
-          <TouchableOpacity
-            style={{
-              backgroundColor: "#1e90ff",
-              padding: 12,
-              marginTop: 20,
-              borderRadius: 8,
-            }}
-            onPress={handleGeneratePDF}
-          >
-            <Text
-              style={{
-                color: "white",
-                textAlign: "center",
-                fontWeight: "bold",
-              }}
-            >
-              Gerar PDF
+          <View style={styles.containerproducts}>
+            <FlatList
+              data={products}
+              keyExtractor={(item, index) => String(index)}
+              renderItem={renderItem}
+            />
+          </View>
+          <View style={styles.footer}>
+            <Text style={styles.totalVenda}>
+              Total da Venda: R$ {totalGeral.toFixed(2)}
             </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.buttonPDF}
+              onPress={handleGeneratePDF}
+            >
+              <Text style={styles.buttonPDFText}>Gerar PDF</Text>
+            </TouchableOpacity>
+          </View>
         </>
       )}
     </View>
