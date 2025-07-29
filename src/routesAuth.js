@@ -24,6 +24,7 @@ import SalesDashboard from "./screens/sales_dashboard/sales_dashboard.jsx";
 import LogoutScreen from "./components/logout_screen/logoutscreen.jsx";
 import Vehicle from "./screens/reg_vehicle/vehicle_reg_screen.jsx";
 import VehiclesScreen from "./screens/customerVehiclesScreen/CustomerVehiclesScreen.jsx";
+import ProductsSalesScreen from "./screens/produtcs_sales_screen/products_sales_screen.jsx";
 import SalesDetailScreen from "./screens/saledetailscreen/saledetailscreen.jsx";
 import EmployeeList from "./screens/employee_list/employee_list.jsx";
 import AppStack from "../appstack.js";
@@ -257,6 +258,21 @@ function RoutesAuth() {
                 drawerIcon: ({ color, size }) => (
                   <Icon
                     name="bar-chart"
+                    color={color}
+                    size={size}
+                    style={{ marginLeft: -15 }}
+                  />
+                ),
+              }}
+            />
+            <Drawer.Screen
+              name="Produtos Vendidos"
+              component={ProductsSalesScreen}
+              options={{
+                headerShown: false,
+                drawerIcon: ({ color, size }) => (
+                  <Icon
+                    name="shopping-bag"
                     color={color}
                     size={size}
                     style={{ marginLeft: -15 }}

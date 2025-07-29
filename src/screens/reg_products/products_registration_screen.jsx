@@ -28,6 +28,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import TextBox from "../../components/textbox/textbox.jsx";
 import * as ImagePicker from "expo-image-picker"; // Importa o ImagePicker
 import { useCameraPermission } from "../../context/CameraPermissionContext.jsx";
+import { Ionicons } from "@expo/vector-icons";
 import { CameraView } from "expo-camera";
 
 function ProductsRegistrationScreen() {
@@ -287,38 +288,63 @@ function ProductsRegistrationScreen() {
       const formattedPrice = parseFloat(price.replace(",", "."));
       const formattedQuantity = Number(quantity);
 
-      const payload = {
-        id: selectedProductId || null, // Se não houver ID, será enviado `null`
-        name,
-        price: formattedPrice,
-        barcode,
-        ncm,
-        aliquota,
-        cfop,
-        cst,
-        csosn,
-        stock: formattedQuantity,
-        category_id: selectedCategory,
-        company_id: companyId,
-      };
+      /*const formData = new FormData();
 
-      console.log("Payload antes de enviar para a API:", payload);
+      formData.append("id", selectedProductId || "");
+      formData.append("name", name);
+      formData.append("price", formattedPrice.toString());
+      formData.append("barcode", barcode);
+      formData.append("ncm", ncm);
+      formData.append("aliquota", aliquota);
+      formData.append("cfop", cfop);
+      formData.append("cst", cst);
+      formData.append("csosn", csosn);
+      formData.append("stock", formattedQuantity.toString());
+      formData.append("category_id", selectedCategory.toString());
+      formData.append("company_id", companyId.toString());*/
 
-      if (imageUri) {
+      /* if (imageUri) {
         const uriParts = imageUri.split(".");
-        const fileType = uriParts[uriParts.length - 1];
+        const fileType = uriParts[uriParts.length - 1].toLowerCase();
+
+        const getMimeType = (ext) => {
+          if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
+          if (ext === "png") return "image/png";
+          if (ext === "webp") return "image/webp";
+          return `image/${ext}`;
+        };*/
+
+      /* const mimeType = getMimeType(fileType);
+
         formData.append("image", {
           uri: imageUri,
           name: `product_image.${fileType}`,
-          type: `image/${fileType}`,
+          type: mimeType,
         });
-      }
+      }*/
 
-      const response = await api.post("/products", payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await api.post(
+        "/products",
+        {
+          id: selectedProductId || "",
+          name,
+          price: parseFloat(price.replace(",", ".")),
+          barcode,
+          ncm,
+          aliquota,
+          cfop,
+          cst,
+          csosn,
+          stock: Number(quantity),
+          category_id: selectedCategory,
+          company_id: companyId,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       console.log("Resposta completa da API:", response.data);
       Alert.alert("Sucesso", response.data.message);
@@ -458,6 +484,21 @@ function ProductsRegistrationScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      // Quando a tela ganha foco, limpa os campos do formulário
+      setSelectedProductId(null);
+      setName("");
+      setPrice("");
+      setBarcode("");
+      setScannedCode("");
+      setNcm("");
+      setAliquota("");
+      setCfop("");
+      setCst("");
+      setCsosn("");
+      setQuantity("");
+      setSelectedCategory("");
+      setImageUri(null);
+
       if (!userToken || !companyId) {
         console.warn("Token ou CompanyId indefinido no foco da tela");
         return;
@@ -747,7 +788,16 @@ function ProductsRegistrationScreen() {
       {/* FlatList de Produtos */}
 
       {loading ? (
-        <ActivityIndicator size="large" color={COLORS.primary} />
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingVertical: 20,
+          }}
+        >
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
       ) : (
         <FlatList
           data={products}
@@ -760,6 +810,35 @@ function ProductsRegistrationScreen() {
 
             return (
               <View style={styles.productCard}>
+                {item.image_url ? (
+                  <Image
+                    source={{
+                      uri:
+                        item.image_url ||
+                        "https://via.placeholder.com/100?text=Sem+Imagem",
+                    }}
+                    style={{
+                      width: 100,
+                      height: 100,
+                      borderRadius: 8,
+                      marginBottom: 10,
+                    }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View
+                    style={{
+                      width: 100,
+                      height: 100,
+                      backgroundColor: "#ccc",
+                      borderRadius: 8,
+                      marginBottom: 10,
+                    }}
+                  />
+                )}
+
+                <Ionicons name="camera-outline" size={28} color="#888" />
+
                 <Text style={styles.productName}>{item.name}</Text>
                 <Text style={styles.productDetails}>
                   Preço: R$ {item.price} | Estoque:{" "}
@@ -812,3 +891,30 @@ function ProductsRegistrationScreen() {
 }
 
 export default ProductsRegistrationScreen;
+
+/*const payload = {
+        id: selectedProductId || null, // Se não houver ID, será enviado `null`
+        name,
+        price: formattedPrice,
+        barcode,
+        ncm,
+        aliquota,
+        cfop,
+        cst,
+        csosn,
+        stock: formattedQuantity,
+        category_id: selectedCategory,
+        company_id: companyId,
+      };
+
+      console.log("Payload antes de enviar para a API:", payload);
+
+      if (imageUri) {
+        const uriParts = imageUri.split(".");
+        const fileType = uriParts[uriParts.length - 1];
+        formData.append("image", {
+          uri: imageUri,
+          name: `product_image.${fileType}`,
+          type: `image/${fileType}`,
+        });
+      }*/

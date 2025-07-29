@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "./products.style.js";
 import { products } from "../../constants/dados.js";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import TextBox from "../../components/textbox/textbox.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useCart } from "../../context/CartContext.jsx";
@@ -148,6 +148,13 @@ function Products(props) {
       );
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      console.log("Tela focada. Buscando produtos...");
+      fetchProducts();
+    }, [authToken, companyId, employeeId])
+  );
 
   return (
     <View style={styles.container}>
