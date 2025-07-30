@@ -288,7 +288,7 @@ function ProductsRegistrationScreen() {
       const formattedPrice = parseFloat(price.replace(",", "."));
       const formattedQuantity = Number(quantity);
 
-      /*const formData = new FormData();
+      const formData = new FormData();
 
       formData.append("id", selectedProductId || "");
       formData.append("name", name);
@@ -301,9 +301,9 @@ function ProductsRegistrationScreen() {
       formData.append("csosn", csosn);
       formData.append("stock", formattedQuantity.toString());
       formData.append("category_id", selectedCategory.toString());
-      formData.append("company_id", companyId.toString());*/
+      formData.append("company_id", companyId.toString());
 
-      /* if (imageUri) {
+      if (imageUri) {
         const uriParts = imageUri.split(".");
         const fileType = uriParts[uriParts.length - 1].toLowerCase();
 
@@ -312,39 +312,37 @@ function ProductsRegistrationScreen() {
           if (ext === "png") return "image/png";
           if (ext === "webp") return "image/webp";
           return `image/${ext}`;
-        };*/
+        };
 
-      /* const mimeType = getMimeType(fileType);
+        let uri = imageUri;
+
+        if (Platform.OS === "ios") {
+          // Remove file:// se existir no iOS
+          if (uri.startsWith("file://")) {
+            uri = uri.replace("file://", "");
+          }
+        } else if (Platform.OS === "android") {
+          // Garante que tenha file:// no Android
+          if (!uri.startsWith("file://")) {
+            uri = "file://" + uri;
+          }
+        }
 
         formData.append("image", {
-          uri: imageUri,
+          uri,
           name: `product_image.${fileType}`,
-          type: mimeType,
+          type: getMimeType(fileType),
         });
-      }*/
+      }
 
-      const response = await api.post(
-        "/products",
-        {
-          id: selectedProductId || "",
-          name,
-          price: parseFloat(price.replace(",", ".")),
-          barcode,
-          ncm,
-          aliquota,
-          cfop,
-          cst,
-          csosn,
-          stock: Number(quantity),
-          category_id: selectedCategory,
-          company_id: companyId,
+      console.log("Campos do FormData:");
+      console.log(formData._parts);
+
+      const response = await api.post("/products", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      });
 
       console.log("Resposta completa da API:", response.data);
       Alert.alert("Sucesso", response.data.message);
@@ -373,7 +371,13 @@ function ProductsRegistrationScreen() {
       setSelectedCategory("");
       setRefreshProducts((prev) => !prev);
     } catch (error) {
-      console.error("Erro na requisição:", error);
+      console.error("Erro na requisição:", {
+        message: error.message,
+        code: error.code,
+        config: error.config,
+        request: error.request,
+        response: error.response?.data,
+      });
       const errorMessage =
         error?.response?.data?.message ||
         "Não foi possível cadastrar o produto.";
@@ -918,3 +922,19 @@ export default ProductsRegistrationScreen;
           type: `image/${fileType}`,
         });
       }*/
+
+/* {
+          id: selectedProductId || "",
+          name,
+          price: parseFloat(price.replace(",", ".")),
+          barcode,
+          ncm,
+          aliquota,
+          cfop,
+          cst,
+          csosn,
+          stock: Number(quantity),
+          category_id: selectedCategory,
+          company_id: companyId,
+          uri: imageUri,
+        },*/
