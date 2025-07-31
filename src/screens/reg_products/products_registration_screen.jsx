@@ -160,8 +160,9 @@ function ProductsRegistrationScreen() {
       quality: 1,
     });
 
-    if (!result.cancelled) {
-      setImageUri(result.uri); // Armazena a URI da imagem tirada
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+      console.log("Imagem capturada URI:", result.assets[0].uri);
     }
   };
 
@@ -182,8 +183,9 @@ function ProductsRegistrationScreen() {
       quality: 1,
     });
 
-    if (!result.cancelled) {
-      setImageUri(result.uri); // Armazena a URI da imagem selecionada
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+      console.log("Imagem selecionada URI:", result.assets[0].uri);
     }
   };
 
@@ -262,7 +264,7 @@ function ProductsRegistrationScreen() {
   };
 
   // Função de cadastro de produto
-  const handleCreateProduct = async () => {
+  /* 310725 const handleCreateProduct = async () => {
     if (!name || !price || !quantity || !selectedCategory) {
       Alert.alert("Erro", "Todos os campos devem ser preenchidos.");
       return;
@@ -356,8 +358,8 @@ function ProductsRegistrationScreen() {
           const updatedProducts = prevProducts.filter((item) => item.id !== id);
           return [id, ...updatedProducts];
         });*/
-      // Limpa os campos após sucesso
-      setSelectedProductId(null);
+  // Limpa os campos após sucesso
+  /* setSelectedProductId(null);
       setName("");
       setPrice("");
       setBarcode("");
@@ -382,6 +384,127 @@ function ProductsRegistrationScreen() {
         error?.response?.data?.message ||
         "Não foi possível cadastrar o produto.";
       Alert.alert("Erro", errorMessage);
+    }
+  };*/
+
+  const handleCreateProduct = async () => {
+    if (!name || !price || !quantity || !selectedCategory) {
+      Alert.alert("Erro", "Todos os campos devem ser preenchidos.");
+      return;
+    }
+
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      if (!token) {
+        Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
+        return;
+      }
+
+      const formattedPrice = parseFloat(price.replace(",", "."));
+      const formattedQuantity = Number(quantity);
+
+      const productPayload = {
+        id: null,
+        name,
+        price: formattedPrice,
+        barcode,
+        ncm,
+        aliquota,
+        cfop,
+        cst,
+        csosn,
+        stock: formattedQuantity,
+        category_id: selectedCategory,
+        company_id: companyId,
+      };
+
+      const productResponse = await api.post("/products", productPayload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const createdProduct = productResponse.data.data || productResponse.data;
+      const productId = createdProduct.product?.id;
+      console.log("Produto criado:", createdProduct);
+
+      if (!productId) {
+        Alert.alert("Erro", "ID do produto criado não foi retornado.");
+        return;
+      }
+
+      let imageUrl = null;
+
+      if (imageUri) {
+        const uriParts = imageUri.split(".");
+        const fileType = uriParts[uriParts.length - 1].toLowerCase();
+
+        const getMimeType = (ext) => {
+          if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
+          if (ext === "png") return "image/png";
+          if (ext === "webp") return "image/webp";
+          return `image/${ext}`;
+        };
+
+        let uri = imageUri;
+        if (Platform.OS === "android" && !uri.startsWith("file://")) {
+          uri = "file://" + uri;
+        }
+
+        console.log("Image URI antes do upload:", uri);
+
+        const imageFormData = new FormData();
+        imageFormData.append("product_id", String(createdProduct.product.id));
+        imageFormData.append("company_id", String(companyId));
+        imageFormData.append("image", {
+          uri,
+          name: `product_image.${fileType}`,
+          type: getMimeType(fileType),
+        });
+
+        // Debug: listar tudo que está no FormData antes de enviar
+        for (let pair of imageFormData.entries()) {
+          console.log(pair[0], pair[1]);
+        }
+
+        const imageResponse = await api.post("/images", imageFormData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        console.log("Resposta upload imagem:", imageResponse.data);
+
+        imageUrl = imageResponse.data.image_url;
+
+        // Atualizar produto com image_url, se necessário
+        await api.put(
+          `/products/${createdProduct.id}`,
+          { image_url: imageUrl },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+
+      Alert.alert("Sucesso", "Produto cadastrado com sucesso!");
+      fetchProducts(token, companyId);
+
+      // Limpar campos
+      setSelectedProductId(null);
+      setName("");
+      setPrice("");
+      setBarcode("");
+      setNcm("");
+      setAliquota("");
+      setCfop("");
+      setCst("");
+      setCsosn("");
+      setQuantity("");
+      setSelectedCategory("");
+      setImageUri(null);
+    } catch (error) {
+      console.error("Erro no cadastro do produto:", error);
+      Alert.alert(
+        "Erro",
+        error.response?.data?.message || "Não foi possível cadastrar o produto."
+      );
     }
   };
 
