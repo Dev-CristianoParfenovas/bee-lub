@@ -9,6 +9,7 @@ import {
   Platform,
   StatusBar,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "./products.style.js";
@@ -21,6 +22,7 @@ import api from "../../constants/api.js";
 import { useRoute } from "@react-navigation/native";
 import { useCameraPermission } from "../../context/CameraPermissionContext.jsx";
 import { CameraView } from "expo-camera";
+import ImageLoadingView from "../../components/img/imageloadingview.js";
 
 function Products(props) {
   const { userName } = useAuth();
@@ -286,11 +288,16 @@ function Products(props) {
             data={filteredProducts}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
-              <TouchableOpacity style={styles.card}>
-                <Image source={{ uri: item.image }} style={styles.image} />
+              <TouchableOpacity
+                style={styles.card}
+                onPress={() => handleAddToCart(item)}
+              >
+                <ImageLoadingView imageUrl={item.image_url} imageSize={100} />
                 <View style={styles.details}>
                   <Text style={styles.name}>{item.name}</Text>
-                  <Text style={styles.price}>R$ {item.price}</Text>
+                  <Text style={styles.price}>
+                    R$ {parseFloat(item.price).toFixed(2).replace(".", ",")}
+                  </Text>
                   <TouchableOpacity
                     style={styles.addToCartButton}
                     onPress={() => handleAddToCart(item)}
@@ -303,6 +310,7 @@ function Products(props) {
                     <Text style={styles.addToCartText}>Adicionar</Text>
                   </TouchableOpacity>
                 </View>
+                {/* --- FIM DA MUDANÇA --- */}
               </TouchableOpacity>
             )}
           />

@@ -257,6 +257,23 @@ export const styles = StyleSheet.create({
     marginTop: 10, // Aumenta o espaçamento entre o ScrollView e o FlatList
     paddingBottom: 20, // Adiciona padding no fundo para o FlatList
   },
+  loadingContainer: {
+    flexDirection: "row", // Para alinhar o spinner e o texto horizontalmente
+    alignItems: "center",
+    justifyContent: "center", // Centraliza o conteúdo (spinner + texto)
+    padding: 10,
+    backgroundColor: "#f0f0f0", // Um fundo claro para a mensagem
+    borderRadius: 8,
+    marginTop: 10, // Espaçamento entre o botão e a mensagem de loading
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  loadingText: {
+    marginLeft: 10, // Espaçamento entre o spinner e o texto
+    fontSize: 16,
+    color: COLORS.text || "#333", // Use sua cor de texto principal ou um padrão
+    fontWeight: "bold",
+  },
 
   camera: {
     flex: 1,

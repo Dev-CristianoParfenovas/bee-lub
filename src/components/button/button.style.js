@@ -25,4 +25,8 @@ export const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: FONT_SIZE.lg,
   },
+  btnDisabled: {
+    backgroundColor: "#A0A0A0", // Cor mais clara/cinza para o botão desabilitado
+    opacity: 0.7, // <<-- Isso cria o efeito de "desfoque" ou esmaecimento
+  },
 });

@@ -63,18 +63,26 @@ export const styles = StyleSheet.create({
   // Produtos
   containerproducts: {
     flex: 1,
+    padding: 10,
   },
+
   card: {
-    backgroundColor: COLORS.white,
+    backgroundColor: "#fff",
     borderRadius: 10,
     padding: 10,
-    marginVertical: 10,
-    marginHorizontal: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginVertical: 5, // Use marginVertical para espaçamento vertical entre os cards
+    marginHorizontal: 10, // Adicione marginHorizontal para ter um espaçamento nas laterais
     alignItems: "center",
+    // Remova flex: 1 e maxWidth, ou ajuste para ocupar a largura total
+    // flex: 1,
+    // maxWidth: "48%",
+    width: "auto", // Ocupa a largura necessária (geralmente 100% da área disponível com as margens)
+    alignSelf: "stretch", // Garante que o item se estique na largura do container FlatList
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   image: {
     width: 100,
@@ -84,31 +92,32 @@ export const styles = StyleSheet.create({
   },
   details: {
     alignItems: "center",
+    width: "100%",
   },
   name: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: "600",
-    color: COLORS.dark,
-    marginBottom: 4,
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 5,
   },
   price: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: "bold",
-    color: COLORS.primary,
-    marginBottom: 8,
+    fontSize: 14,
+    color: "#555",
+    marginBottom: 10,
   },
   addToCartButton: {
     flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.bluebtn,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    backgroundColor: COLORS.bluebtnsmall,
+    paddingVertical: 8,
+    paddingHorizontal: 15,
     borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
   },
   addToCartText: {
-    color: COLORS.white,
-    fontSize: FONT_SIZE.sm,
-    marginLeft: 8,
+    color: "white",
+    marginLeft: 5,
+    fontWeight: "bold",
   },
 
   searchContainer: {

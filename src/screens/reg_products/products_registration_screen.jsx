@@ -9,7 +9,6 @@ import {
   FlatList,
   ActivityIndicator,
   ScrollView,
-  SafeAreaView,
   Platform,
   StatusBar,
 } from "react-native";
@@ -58,6 +57,7 @@ function ProductsRegistrationScreen() {
   const [scannedCode, setScannedCode] = useState();
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [refreshProducts, setRefreshProducts] = useState(false);
+  const [productsLoading, setProductsLoading] = useState(true);
 
   // Função para buscar categorias
   const fetchCategories = async (token, companyId) => {
@@ -114,7 +114,7 @@ function ProductsRegistrationScreen() {
 
   // Função para buscar produtos
   const fetchProducts = async (token, companyId) => {
-    setLoading(true);
+    setProductsLoading(true);
     try {
       const response = await api.get(`/products/${companyId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -139,7 +139,7 @@ function ProductsRegistrationScreen() {
           "Não foi possível carregar os produtos."
       );
     } finally {
-      setLoading(false);
+      setProductsLoading(false);
     }
   };
 
@@ -194,35 +194,36 @@ function ProductsRegistrationScreen() {
     const initialize = async () => {
       try {
         const token = await AsyncStorage.getItem("authToken");
-        const companyId = await AsyncStorage.getItem("companyId");
+        const storedCompanyId = await AsyncStorage.getItem("companyId"); // Renomeado para evitar conflito
 
-        console.log("Valores recuperados do AsyncStorage:", {
-          token,
-          companyId,
-        });
-
-        if (!token || !companyId) {
+        if (!token || !storedCompanyId) {
           Alert.alert("Erro", "Usuário ou empresa não autenticados.");
           navigation.navigate("Login");
           return;
         }
 
         setUserToken(token);
-        setCompanyId(companyId);
+        setCompanyId(storedCompanyId); // Use o nome renomeado aqui
 
-        await fetchCategories(token, companyId);
-        await fetchProducts(token, companyId);
+        // Remova a chamada a fetchProducts daqui se o segundo useEffect já lida com isso.
+        // Ou mantenha aqui se quiser que ele carregue na inicialização e o segundo seja apenas para refreshes.
+        // Se ambos chamam, o segundo useEffect pode ser simplificado para depender de refreshProducts apenas.
+        await fetchCategories(token, storedCompanyId); // Assumindo que você tem fetchCategories
+        await fetchProducts(token, storedCompanyId); // Chama fetchProducts para carregar a lista inicial
       } catch (error) {
         console.error("Erro na inicialização:", error);
         Alert.alert("Erro", "Falha ao carregar dados iniciais.");
       }
     };
-
     initialize();
   }, []);
 
   useEffect(() => {
-    if (userToken && companyId) {
+    // Este useEffect só deve ser chamado se houver uma razão para "refrescar" a lista
+    // Fora da inicialização. Se você já chamou fetchProducts no primeiro useEffect,
+    // e handleCreateProduct também chama, talvez este segundo possa ser mais específico.
+    if (userToken && companyId && refreshProducts) {
+      // Adicione 'refreshProducts' como uma dependência real
       fetchProducts(userToken, companyId);
     }
   }, [refreshProducts, userToken, companyId]);
@@ -387,7 +388,7 @@ function ProductsRegistrationScreen() {
     }
   };*/
 
-  const handleCreateProduct = async () => {
+  /* 020825 const handleCreateProduct = async () => {
     if (!name || !price || !quantity || !selectedCategory) {
       Alert.alert("Erro", "Todos os campos devem ser preenchidos.");
       return;
@@ -505,6 +506,132 @@ function ProductsRegistrationScreen() {
         "Erro",
         error.response?.data?.message || "Não foi possível cadastrar o produto."
       );
+    }
+  };*/
+
+  const handleCreateProduct = async () => {
+    if (!name || !price || !quantity || !selectedCategory) {
+      Alert.alert("Erro", "Todos os campos devem ser preenchidos.");
+      return;
+    }
+
+    // 1. INÍCIO: Ativa o estado de carregamento e desabilita o botão
+    setLoading(true);
+
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      if (!token) {
+        Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
+        return;
+      }
+
+      const formattedPrice = parseFloat(price.replace(",", "."));
+      const formattedQuantity = Number(quantity);
+
+      // Primeira requisição para criar o produto, sem a imagem.
+      // O id é null para indicar uma nova criação.
+      const productPayload = {
+        id: null, // Correctly set to null for new product creation
+        name,
+        price: formattedPrice,
+        barcode,
+        ncm,
+        aliquota,
+        cfop,
+        cst,
+        csosn,
+        stock: formattedQuantity, // Note: backend expects 'stock', not 'quantity' if you're sending this
+        category_id: selectedCategory,
+        company_id: companyId,
+      };
+
+      const productResponse = await api.post("/products", productPayload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const createdProduct = productResponse.data.data || productResponse.data;
+      const productId = createdProduct.product?.id;
+      console.log("Produto criado:", createdProduct);
+
+      if (!productId) {
+        Alert.alert("Erro", "ID do produto criado não foi retornado.");
+        return;
+      }
+
+      // Não precisamos de imageUrl = null aqui, pois não vamos atualizar products com ela
+
+      if (imageUri) {
+        const uriParts = imageUri.split(".");
+        const fileType = uriParts[uriParts.length - 1].toLowerCase();
+
+        const getMimeType = (ext) => {
+          if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
+          if (ext === "png") return "image/png";
+          if (ext === "webp") return "image/webp";
+          return `image/${ext}`;
+        };
+
+        let uri = imageUri;
+        if (Platform.OS === "android" && !uri.startsWith("file://")) {
+          uri = "file://" + uri;
+        }
+
+        console.log("Image URI antes do upload:", uri);
+
+        const imageFormData = new FormData();
+        // O backend espera o 'product_id' e o 'company_id' como string.
+        imageFormData.append("product_id", String(productId));
+        imageFormData.append("company_id", String(companyId));
+        imageFormData.append("image", {
+          uri,
+          name: `product_image.${fileType}`,
+          type: getMimeType(fileType),
+        });
+
+        // Debug: listar tudo que está no FormData antes de enviar
+        for (let pair of imageFormData.entries()) {
+          console.log(pair[0], pair[1]);
+        }
+
+        const imageResponse = await api.post("/images", imageFormData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data", // Importante para FormData
+          },
+        });
+
+        console.log("Resposta upload imagem:", imageResponse.data);
+
+        // Não há necessidade de 'imageUrl = imageResponse.data.image_url;'
+        // Nem de fazer um 'api.put' para products com image_url
+        // Pois a imagem já foi associada via 'images' table.
+      }
+
+      Alert.alert("Sucesso", "Produto cadastrado com sucesso!");
+      fetchProducts(token, companyId); // Atualiza a lista de produtos
+
+      // Limpar campos
+      setSelectedProductId(null);
+      setName("");
+      setPrice("");
+      setBarcode("");
+      setNcm("");
+      setAliquota("");
+      setCfop("");
+      setCst("");
+      setCsosn("");
+      setQuantity("");
+      setSelectedCategory("");
+      setImageUri(null);
+    } catch (error) {
+      console.error("Erro no cadastro do produto:", error);
+      Alert.alert(
+        "Erro",
+        error.response?.data?.message || "Não foi possível cadastrar o produto."
+      );
+    } finally {
+      // 2. FIM: Desativa o estado de carregamento
+      setLoading(false);
     }
   };
 
@@ -909,28 +1036,40 @@ function ProductsRegistrationScreen() {
 
       {/* Botão Cadastrar Produto */}
       <View style={styles.bottomButtonContainer}>
-        <Button text="Cadastrar Produto" onPress={handleCreateProduct} />
+        <Button
+          text="Cadastrar Produto"
+          onPress={handleCreateProduct}
+          disabled={loading}
+        />
       </View>
 
       {/* FlatList de Produtos */}
 
-      {loading ? (
+      {productsLoading ? ( // Renderiza o spinner GRANDE da lista
         <View
           style={{
             flex: 1,
             justifyContent: "center",
             alignItems: "center",
             paddingVertical: 20,
+            marginTop: 20,
           }}
         >
-          <ActivityIndicator size="large" color={COLORS.primary} />
+          <ActivityIndicator size="large" color={COLORS.primary || "#007bff"} />
+          <Text
+            style={{
+              marginTop: 10,
+              fontSize: 16,
+              color: COLORS.text || "#333",
+            }}
+          >
+            Carregando produtos...
+          </Text>
         </View>
       ) : (
         <FlatList
           data={products}
-          keyExtractor={(item, index) =>
-            item.id?.toString() || index.toString()
-          }
+          keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => {
             if (!item || !item.id) return null;
@@ -963,8 +1102,6 @@ function ProductsRegistrationScreen() {
                     }}
                   />
                 )}
-
-                <Ionicons name="camera-outline" size={28} color="#888" />
 
                 <Text style={styles.productName}>{item.name}</Text>
                 <Text style={styles.productDetails}>
