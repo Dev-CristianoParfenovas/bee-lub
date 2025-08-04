@@ -27,6 +27,7 @@ function CategoryRegistrationScreen(props) {
   const [isNotification, setIsNotification] = useState(false);
   const [errors, setErrors] = useState({ name: "" });
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -141,6 +142,8 @@ function CategoryRegistrationScreen(props) {
         return;
       }
 
+      setLoading(true);
+
       try {
         const token = await AsyncStorage.getItem("authToken"); // Recupera o token do AsyncStorage
         if (!token) {
@@ -171,6 +174,7 @@ function CategoryRegistrationScreen(props) {
           });
 
           setIsNotification(false); // reseta o switch para false
+          setLoading(false);
 
           // Adiciona a nova categoria ao estado atual
           setCategories((prevCategories) => [...prevCategories, category]);
@@ -234,7 +238,11 @@ function CategoryRegistrationScreen(props) {
         {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
       </View>
 
-      <Button text="Criar Categoria" onPress={handleCreateCategory} />
+      <Button
+        text="Criar Categoria"
+        onPress={handleCreateCategory}
+        disabled={loading}
+      />
 
       <FlatList
         data={categories}

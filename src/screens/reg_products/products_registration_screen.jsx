@@ -29,6 +29,8 @@ import * as ImagePicker from "expo-image-picker"; // Importa o ImagePicker
 import { useCameraPermission } from "../../context/CameraPermissionContext.jsx";
 import { Ionicons } from "@expo/vector-icons";
 import { CameraView } from "expo-camera";
+import * as FileSystem from "expo-file-system";
+import ImageLoadingView from "../../components/img/imageloadingview.js";
 
 function ProductsRegistrationScreen() {
   const [name, setName] = useState("");
@@ -59,6 +61,26 @@ function ProductsRegistrationScreen() {
   const [refreshProducts, setRefreshProducts] = useState(false);
   const [productsLoading, setProductsLoading] = useState(true);
 
+  // Função pra limpar da memoria  qdo tira foto pro produto
+  const clearImageCache = async () => {
+    try {
+      const cacheDirectory = `${FileSystem.cacheDirectory}ImagePicker`;
+
+      // NOVO: Verifica se o diretório existe antes de tentar ler
+      const dirInfo = await FileSystem.getInfoAsync(cacheDirectory);
+
+      if (dirInfo.exists && dirInfo.isDirectory) {
+        console.log("Limpando cache do ImagePicker...");
+        await FileSystem.deleteAsync(cacheDirectory, { idempotent: true });
+      } else {
+        console.log(
+          "Diretório de cache do ImagePicker não existe. Nada para limpar."
+        );
+      }
+    } catch (e) {
+      console.error("Erro ao limpar cache do ImagePicker:", e);
+    }
+  };
   // Função para buscar categorias
   const fetchCategories = async (token, companyId) => {
     try {
@@ -145,24 +167,29 @@ function ProductsRegistrationScreen() {
 
   // Função para capturar imagem da câmera
   const takePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert(
-        "Permissão necessária",
-        "A permissão para usar a câmera é necessária."
-      );
-      return;
-    }
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permissão necessária",
+          "A permissão para usar a câmera é necessária."
+        );
+        return;
+      }
 
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5,
+      });
 
-    if (!result.canceled) {
-      setImageUri(result.assets[0].uri);
-      console.log("Imagem capturada URI:", result.assets[0].uri);
+      if (!result.canceled) {
+        setImageUri(result.assets[0].uri);
+        console.log("Imagem capturada URI:", result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error("Ocorreu um erro ao tirar a foto:", error);
+      Alert.alert("Erro", "Ocorreu um erro inesperado ao tirar a foto.");
     }
   };
 
@@ -623,6 +650,7 @@ function ProductsRegistrationScreen() {
       setQuantity("");
       setSelectedCategory("");
       setImageUri(null);
+      await clearImageCache();
     } catch (error) {
       console.error("Erro no cadastro do produto:", error);
       Alert.alert(
@@ -1076,33 +1104,7 @@ function ProductsRegistrationScreen() {
 
             return (
               <View style={styles.productCard}>
-                {item.image_url ? (
-                  <Image
-                    source={{
-                      uri:
-                        item.image_url ||
-                        "https://via.placeholder.com/100?text=Sem+Imagem",
-                    }}
-                    style={{
-                      width: 100,
-                      height: 100,
-                      borderRadius: 8,
-                      marginBottom: 10,
-                    }}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View
-                    style={{
-                      width: 100,
-                      height: 100,
-                      backgroundColor: "#ccc",
-                      borderRadius: 8,
-                      marginBottom: 10,
-                    }}
-                  />
-                )}
-
+                <ImageLoadingView imageUrl={item.image_url} imageSize={100} />
                 <Text style={styles.productName}>{item.name}</Text>
                 <Text style={styles.productDetails}>
                   Preço: R$ {item.price} | Estoque:{" "}

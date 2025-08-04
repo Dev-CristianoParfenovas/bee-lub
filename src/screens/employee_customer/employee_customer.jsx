@@ -16,6 +16,7 @@ import { styles } from "./employee_customer.style.js";
 import images from "../../constants/icons.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import api from "../../constants/api.js";
+import { disableErrorHandling } from "expo";
 
 function EmployeeCustomer(props) {
   const { userName, companyId, employeeId } = useAuth(); // dados do contexto de autenticação
@@ -49,6 +50,7 @@ function EmployeeCustomer(props) {
   useFocusEffect(
     React.useCallback(() => {
       setSearch("");
+
       setSelectedCustomer(null);
       if (companyId) fetchCustomers();
     }, [companyId])
