@@ -22,6 +22,7 @@ function EmployeeRegistrationScreen(props) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({ name: "", email: "", password: "" });
   const navigation = useNavigation(); // Hook para acessar a navegação
 
@@ -42,6 +43,8 @@ function EmployeeRegistrationScreen(props) {
         Alert.alert("Erro", "ID da empresa não está definido.");
         return;
       }
+
+      setLoading(true);
 
       try {
         console.log("Enviando dados para API:", {
@@ -78,6 +81,7 @@ function EmployeeRegistrationScreen(props) {
             email: "",
             password: "",
           });
+          setLoading(false);
         } else {
           console.error("Estrutura inesperada na resposta:", data);
           Alert.alert(
@@ -185,7 +189,11 @@ function EmployeeRegistrationScreen(props) {
             ) : null}
           </View>
 
-          <Button text="Criar Conta" onPress={handleCreateEmployee} />
+          <Button
+            text="Criar Conta"
+            onPress={handleCreateEmployee}
+            loading={loading}
+          />
         </View>
       </View>
     </AuthProvider>

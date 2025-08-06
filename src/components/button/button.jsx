@@ -9,7 +9,7 @@ function Button(props) {
       disabled={props.disabled} // <<-- ESSENCIAL: passa 'disabled' para o TouchableOpacity
       activeOpacity={props.disabled ? 1 : 0.7} // Impede o feedback de toque se desabilitado
     >
-      {props.disabled ? (
+      {props.loading ? (
         // Se props.disabled for true, mostra o spinner no centro
         <ActivityIndicator size="small" color="#FFF" /> // Cor do spinner (geralmente branca para contraste)
       ) : (

@@ -1067,7 +1067,7 @@ function ProductsRegistrationScreen() {
         <Button
           text="Cadastrar Produto"
           onPress={handleCreateProduct}
-          disabled={loading}
+          loading={loading}
         />
       </View>
 

@@ -35,6 +35,7 @@ function Vehicle(props) {
   const [clients, setClients] = useState([]);
   const [selectedClientId, setSelectedClientId] = useState(customerId || "");
   const [clientsError, setClientsError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [name, setName] = useState("");
   const [placa, setPlaca] = useState("");
@@ -179,6 +180,8 @@ function Vehicle(props) {
 
     if (!validateFields()) return;
 
+    setLoading(true);
+
     try {
       const token = await AsyncStorage.getItem("authToken");
       if (!token) {
@@ -200,6 +203,8 @@ function Vehicle(props) {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
+      setLoading(false);
 
       Alert.alert("Sucesso", "Veículo cadastrado com sucesso.");
       // Atualiza lista de veículos com o novo
@@ -241,6 +246,19 @@ function Vehicle(props) {
       Alert.alert("Erro", "Erro ao excluir veículo.");
     }
   };
+
+  console.log("--- Debug de Estado ---");
+  console.log("loading:", loading);
+  console.log("name:", name);
+  console.log("placa:", placa);
+  console.log("ano:", ano);
+  console.log("cor:", cor);
+  console.log("selectedClientId:", selectedClientId);
+  console.log(
+    "Botão Desabilitado:",
+    loading || !name || !placa || !ano || !cor || !selectedClientId
+  );
+  console.log("------------------------");
 
   return (
     <View style={styles.container}>
@@ -354,7 +372,14 @@ function Vehicle(props) {
         <Button
           text="Cadastrar"
           onPress={handleCreateVehicle}
-          disabled={!name || !placa || !ano || !cor || !selectedClientId}
+          loading={loading}
+          disabled={
+            !name.trim() ||
+            !placa.trim() ||
+            !ano.trim() ||
+            !cor.trim() ||
+            !selectedClientId
+          }
         />
       </View>
 

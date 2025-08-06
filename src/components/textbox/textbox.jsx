@@ -66,6 +66,7 @@ function TextBox(props) {
         onChangeText={props.onChangeText}
         autoCapitalize={props.autoCapitalize || "none"}
         keyboardType={props.keyboardType || "default"}
+        editable={props.editable}
       />
     );
   };

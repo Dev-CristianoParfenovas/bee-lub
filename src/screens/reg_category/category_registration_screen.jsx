@@ -241,7 +241,7 @@ function CategoryRegistrationScreen(props) {
       <Button
         text="Criar Categoria"
         onPress={handleCreateCategory}
-        disabled={loading}
+        loading={loading}
       />
 
       <FlatList
