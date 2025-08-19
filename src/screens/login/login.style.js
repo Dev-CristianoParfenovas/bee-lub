@@ -63,8 +63,9 @@ export const styles = StyleSheet.create({
 
   // Texto geral
   text: {
-    color: COLORS.yellowbee,
-    fontSize: FONT_SIZE.xl,
+    color: COLORS.white,
+    fontSize: FONT_SIZE.md,
+    fontWeight: "bold",
   },
 
   // Rodapé
@@ -84,5 +85,15 @@ export const styles = StyleSheet.create({
     fontSize: FONT_SIZE.md,
     paddingLeft: 2,
     textDecorationLine: "underline", // Adiciona sublinhado
+  },
+
+  btn: {
+    backgroundColor: COLORS.bluebtn,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 10,
   },
 });

@@ -5,8 +5,11 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-    // paddingHorizontal: 16,
-    // paddingTop: 16,
+  },
+  contentContainer: {
+    flex: 1, // Isso garante que o conteúdo ocupe todo o espaço restante
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
   containerbanner: {
     height: 110,
@@ -45,14 +48,12 @@ export const styles = StyleSheet.create({
     paddingLeft: 5,
   },
   footer: {
-    position: "absolute",
-    bottom: 0,
     width: "100%",
     backgroundColor: COLORS.white,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#ccc",
+    // borderTopWidth: 1,
+    // borderTopColor: "#ccc",
   },
   totalVenda: {
     fontSize: 18,

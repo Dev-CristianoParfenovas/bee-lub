@@ -27,34 +27,41 @@ const ProductsSalesScreen = () => {
   const { companyId, authToken } = useAuth();
   const navigation = useNavigation();
 
-  const fetchMostSoldProducts = async () => {
-    setLoading(true);
-    try {
-      const start = new Date(startDate);
-      start.setUTCHours(0, 0, 0, 0);
-
-      const end = new Date(endDate);
-      end.setUTCHours(23, 59, 59, 999);
-
-      const response = await api.get(`/sales/most-sold/${companyId}`, {
-        headers: { Authorization: `Bearer ${authToken}` },
-        params: {
-          startDate: start.toISOString(),
-          endDate: end.toISOString(),
-        },
-      });
-
-      setProductData(response.data || []);
-    } catch (error) {
-      console.error("Erro ao buscar produtos mais vendidos:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchMostSoldProducts = async () => {
+      setLoading(true);
+      try {
+        const start = new Date(startDate);
+        start.setUTCHours(0, 0, 0, 0);
+
+        const end = new Date(endDate);
+        end.setUTCDate(end.getUTCDate() + 1); // Avança um dia
+        end.setUTCHours(0, 0, 0, 0);
+
+        const response = await api.get(`/sales/most-sold`, {
+          headers: { Authorization: `Bearer ${authToken}` },
+          params: {
+            startDate: start.toISOString(),
+            endDate: end.toISOString(),
+          },
+        });
+
+        console.log("Resposta da API:", response.data);
+
+        setProductData(response.data || []);
+      } catch (error) {
+        console.error("Erro ao buscar produtos mais vendidos:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchMostSoldProducts();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, authToken]);
+
+  /*useEffect(() => {
+    fetchMostSoldProducts();
+  }, [fetchMostSoldProducts]);*/
 
   return (
     <View style={styles.container}>
@@ -124,27 +131,34 @@ const ProductsSalesScreen = () => {
         </View>
       </View>
 
-      {/* Resultado da Venda por Produto */}
-      <View style={styles.orderSummary}>
+      {/* Lista de Produtos */}
+      <View style={{ flex: 1 }}>
         {loading ? (
           <ActivityIndicator size="large" color="#0000ff" />
         ) : (
           <FlatList
             data={productData}
             keyExtractor={(item) => String(item.product_id)}
-            renderItem={({ item }) => (
-              <View style={styles.itemRow}>
-                <Text style={styles.itemName}>{item.product_name}</Text>
-                <View style={{ alignItems: "flex-end" }}>
+            renderItem={({ item }) => {
+              const unitPrice =
+                parseFloat(item.total_revenue) /
+                parseInt(item.total_quantity, 10);
+
+              return (
+                <View style={styles.itemRow}>
+                  <Text style={styles.itemName}>{item.product_name}</Text>
                   <Text style={styles.itemPrice}>
-                    Qtde: {item.total_quantity}
+                    R$ {unitPrice.toFixed(2)}
+                  </Text>
+                  <Text style={styles.itemQuantity}>
+                    x{item.total_quantity}
                   </Text>
                   <Text style={styles.itemPrice}>
                     R$ {parseFloat(item.total_revenue).toFixed(2)}
                   </Text>
                 </View>
-              </View>
-            )}
+              );
+            }}
             ListEmptyComponent={() => (
               <Text style={styles.emptyMessage}>
                 Nenhum produto vendido no período.
@@ -153,6 +167,25 @@ const ProductsSalesScreen = () => {
           />
         )}
       </View>
+
+      {/* Rodapé fixo */}
+      {productData.length > 0 && (
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            Qtde Total:{" "}
+            {productData.reduce(
+              (sum, item) => sum + parseInt(item.total_quantity, 10),
+              0
+            )}
+          </Text>
+          <Text style={styles.footerValue}>
+            Total Geral: R${" "}
+            {productData
+              .reduce((sum, item) => sum + parseFloat(item.total_revenue), 0)
+              .toFixed(2)}
+          </Text>
+        </View>
+      )}
     </View>
   );
 };

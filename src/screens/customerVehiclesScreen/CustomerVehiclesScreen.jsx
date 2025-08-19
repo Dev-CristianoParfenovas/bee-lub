@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,22 +6,35 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ActivityIndicator,
+  Animated,
 } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import Button from "../../components/button/button";
 import api from "../../constants/api";
 import { styles } from "./customer_vehicles.style"; // você pode criar ou adaptar estilos
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS, FONT_SIZE } from "../../constants/theme.js";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 const CustomerVehiclesScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-
+  const { authToken } = useAuth(); // ✅ Obtendo o token do contexto
   const { customer, employee } = route.params;
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      setSelectedVehicle(null);
+      return () => setSelectedVehicle(null);
+    }, [])
+  );
 
   const fetchVehicles = async () => {
     setLoading(true);
@@ -32,9 +45,9 @@ const CustomerVehiclesScreen = () => {
     });
 
     try {
-      const response = await api.get(
-        `/vehicles/${customer.company_id}/${customer.id_client}` // ✅ Corrigido
-      );
+      const response = await api.get(`/vehicles/${customer.id_client}`, {
+        headers: { Authorization: `Bearer ${authToken}` }, // ✅ Corrigido
+      });
       console.log("Resposta da API:", response.data);
 
       setVehicles(response.data.data || []);
@@ -49,10 +62,10 @@ const CustomerVehiclesScreen = () => {
   console.log("🚗 Dados recebidos via route.params:", { customer, employee });
 
   useEffect(() => {
-    if (customer?.id_client) {
+    if (customer?.id_client && authToken) {
       fetchVehicles();
     }
-  }, [customer]);
+  }, [customer, authToken]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.bluebtn }}>
@@ -79,21 +92,24 @@ const CustomerVehiclesScreen = () => {
           <FlatList
             data={vehicles}
             keyExtractor={(item) => item.id_vehicle.toString()}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[
-                  styles.vehicleCard,
-                  selectedVehicle?.id_vehicle === item.id_vehicle &&
-                    styles.selectedCard,
-                ]}
-                onPress={() => setSelectedVehicle(item)}
-              >
-                <Text style={styles.vehicleText}>
-                  Placa: {item.license_plate}
-                </Text>
-                <Text style={styles.vehicleText}>Modelo: {item.model}</Text>
-              </TouchableOpacity>
-            )}
+            renderItem={({ item }) => {
+              const isSelected =
+                selectedVehicle?.id_vehicle === item.id_vehicle;
+              return (
+                <TouchableOpacity
+                  style={[
+                    styles.vehicleCard,
+                    isSelected && styles.selectedCard,
+                  ]}
+                  onPress={() => setSelectedVehicle(item)}
+                >
+                  <Text style={styles.vehicleText}>
+                    Placa: {item.license_plate}
+                  </Text>
+                  <Text style={styles.vehicleText}>Modelo: {item.model}</Text>
+                </TouchableOpacity>
+              );
+            }}
           />
         )}
 

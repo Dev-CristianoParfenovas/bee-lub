@@ -10,20 +10,21 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Button from "../../components/button/button.jsx";
 import { styles } from "./employee_customer.style.js";
 import images from "../../constants/icons.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import api from "../../constants/api.js";
-import { disableErrorHandling } from "expo";
 
 function EmployeeCustomer(props) {
   const { userName, companyId, employeeId } = useAuth(); // dados do contexto de autenticação
   const [search, setSearch] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const navigation = useNavigation();
 
@@ -34,7 +35,19 @@ function EmployeeCustomer(props) {
     }
     setLoading(true);
     try {
-      const response = await api.get(`/clients/${companyId}`);
+      const token = await AsyncStorage.getItem("authToken");
+      console.log("Token recuperado:", token);
+
+      if (!token) {
+        Alert.alert("Erro", "Usuário não autenticado.");
+        return;
+      }
+
+      const response = await api.get("/clients", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (response.data?.data?.length > 0) {
         setCustomers(response.data.data);
       } else {
@@ -60,6 +73,8 @@ function EmployeeCustomer(props) {
   const filteredCustomers = customers.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const isButtonDisabled = !selectedCustomer;
 
   return (
     <View style={styles.container}>
@@ -140,7 +155,10 @@ function EmployeeCustomer(props) {
                   <TouchableOpacity
                     style={[
                       styles.customerCard,
-                      selectedCustomer?.id === item.id &&
+                      // Proteja a comparação.
+                      // Verifique se selectedCustomer existe antes de tentar acessar 'id'
+                      selectedCustomer &&
+                        selectedCustomer.id === item.id &&
                         styles.selectedCustomerCard,
                     ]}
                     onPress={() => {
@@ -166,21 +184,21 @@ function EmployeeCustomer(props) {
           onPress={() =>
             navigation.navigate("Lista de Produtos", {
               employee: employeeId,
-              customer: selectedCustomer,
+              customer: selectedCustomer ?? null,
             })
           }
-          disabled={!selectedCustomer || !employeeId}
+          disabled={!employeeId}
         />
         <Button
           text="Acessar veículos"
           style={{ width: "48%" }}
-          onPress={() =>
+          onPress={() => {
             navigation.navigate("Veículos", {
-              employee: employeeId,
+              employee: selectedEmployee,
               customer: selectedCustomer,
-            })
-          }
-          disabled={!selectedCustomer || !employeeId}
+            });
+          }}
+          disabled={isButtonDisabled}
         />
       </View>
     </View>

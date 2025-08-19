@@ -21,7 +21,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
   }
 }
 
-rootProject.name = 'bee-mobile'
+rootProject.name = 'bee-lub'
 
 dependencyResolutionManagement {
   versionCatalogs {

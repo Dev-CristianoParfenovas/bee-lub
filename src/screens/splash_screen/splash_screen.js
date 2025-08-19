@@ -8,7 +8,7 @@ export const styles = StyleSheet.create({
   },
   containerlogo: {
     alignItems: "center",
-    paddingTop: 155,
+    //paddingTop: 5,
   },
   container: {
     flex: 1,

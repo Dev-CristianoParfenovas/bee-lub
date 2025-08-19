@@ -1,12 +1,10 @@
-import { useEffect } from "react";
+import { NavigationContainer } from "@react-navigation/native";
 import Routes from "./src/routes";
 import RoutesAuth from "./src/routesAuth";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import { UserProvider } from "./src/context/UserContext"; // Importe o UserProvider
 import { CartProvider } from "./src/context/CartContext";
 import { CameraPermissionProvider } from "./src/context/CameraPermissionContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { NavigationContainer } from "@react-navigation/native";
 
 function AppContent() {
   const { isAuthenticated } = useAuth();

@@ -68,20 +68,24 @@ export const styles = StyleSheet.create({
   },
   itemRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginVertical: 5,
-    paddingVertical: 10,
+    justifyContent: "flex-start", // Altere de "space-between" para "flex-start"
+    paddingVertical: 5,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.gray3, // Separador entre itens
+    borderBottomColor: COLORS.gray3,
+    paddingHorizontal: 10, // Separador entre itens
   },
   itemName: {
-    fontSize: FONT_SIZE.md,
+    fontSize: FONT_SIZE.sm,
     color: COLORS.black,
+    flex: 1, // Permite que o nome do funcionário ocupe o espaço restante
+    flexWrap: "wrap", // Garante que o texto quebre a linha se for muito longo
+    marginRight: 5,
   },
   itemPrice: {
-    fontSize: FONT_SIZE.md,
+    fontSize: FONT_SIZE.sm,
     color: COLORS.black,
+    marginRight: 10,
   },
   dateFilters: {
     flexDirection: "row",
@@ -136,12 +140,13 @@ export const styles = StyleSheet.create({
     marginVertical: 10,
   },
   detailButton: {
-    backgroundColor: COLORS.bluebtn, // azul forte
-    paddingVertical: 5,
-    paddingHorizontal: 5,
+    backgroundColor: COLORS.bluebtn,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 8,
     alignItems: "center",
-    marginTop: 5,
+    justifyContent: "center",
+    minWidth: 80, // Defina uma largura mínima para o botão
   },
   detailButtonText: {
     color: "#fff",

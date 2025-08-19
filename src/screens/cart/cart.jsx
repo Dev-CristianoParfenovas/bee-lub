@@ -67,7 +67,7 @@ function Cart(props) {
     if (!item) return;
 
     try {
-      const response = await api.get(`/products/stock/${company_id}/${id}`, {
+      const response = await api.get(`/products/stock/  ${id}`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },

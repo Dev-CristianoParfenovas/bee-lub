@@ -8,31 +8,38 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splashscreen_logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#2e3192"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.beelub.rnqrcode"
+      "bundleIdentifier": "com.beelub.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#2e3192"
       },
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.anonymous.beelub"
+      "package": "com.beelub.app"
+      
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
       [
         "expo-camera",
         {
@@ -42,6 +49,12 @@
         }
       ],
       "expo-barcode-scanner"
-    ]
+      
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "c6ba7957-a0f5-413e-b767-910a93f0e538"
+      }
+    }
   }
 }

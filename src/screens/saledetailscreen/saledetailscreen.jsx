@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  ActivityIndicator,
-  TouchableOpacity,
-} from "react-native";
-import { styles } from "./saledetailscreen.js";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
-import { useAuth } from "../../context/AuthContext.jsx";
-import api from "../../constants/api.js";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { useNavigation } from "@react-navigation/native";
+import api from "../../constants/api.js";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { styles } from "./saledetailscreen.js";
 
 //FUNÇÃO PARA FORMATAR DATAS
 function formatDate(dateString) {
@@ -28,7 +28,6 @@ function formatDate(dateString) {
 export default function SalesDetailScreen({ route }) {
   console.log("route.params:", route.params);
   const {
-    companyId,
     saleGroupId,
     employeeName,
     clientName,
@@ -48,17 +47,15 @@ export default function SalesDetailScreen({ route }) {
 
   const fetchProducts = async () => {
     try {
-      const response = await api.get(
-        `/sales/${companyId}/products-by-sale/${saleGroupId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-        }
-      );
+      const response = await api.get(`/sales/products-by-sale/${saleGroupId}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
       console.log("API response:", response.data);
       // Verifica se tem `.data` dentro de `.data`, senão usa direto
       const items = response.data?.data ?? response.data ?? [];
+      console.log("Log do frontend: " + response.data);
       setProducts(items);
     } catch (error) {
       console.error("Erro ao buscar produtos da venda:", error);
@@ -68,8 +65,10 @@ export default function SalesDetailScreen({ route }) {
   };
 
   useEffect(() => {
-    fetchProducts();
-  }, [saleGroupId, companyId]);
+    if (saleGroupId) {
+      fetchProducts();
+    }
+  }, [saleGroupId]);
 
   const totalGeral = products.reduce(
     (acc, item) => acc + Number(item.total_price ?? 0),
@@ -135,7 +134,7 @@ export default function SalesDetailScreen({ route }) {
       {loading ? (
         <ActivityIndicator size="large" />
       ) : (
-        <>
+        <View>
           <View style={styles.containerdados}>
             <Text style={{ fontWeight: "bold" }}>
               Funcionário: {employeeName || "N/A"}
@@ -159,6 +158,7 @@ export default function SalesDetailScreen({ route }) {
               renderItem={renderItem}
             />
           </View>
+
           <View style={styles.footer}>
             <Text style={styles.totalVenda}>
               Total da Venda: R$ {totalGeral.toFixed(2)}
@@ -170,7 +170,7 @@ export default function SalesDetailScreen({ route }) {
               <Text style={styles.buttonPDFText}>Gerar PDF</Text>
             </TouchableOpacity>
           </View>
-        </>
+        </View>
       )}
     </View>
   );

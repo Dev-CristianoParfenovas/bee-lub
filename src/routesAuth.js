@@ -389,6 +389,24 @@ function RoutesAuth() {
               }}
             />
             <Drawer.Screen
+              name="Pagto"
+              component={Payment}
+              options={{
+                headerShown: false,
+                drawerLabel: () => null, // Oculta o nome do item
+                drawerItemStyle: { height: 0 }, // Oculta o espaço do item
+              }}
+            />
+            <Drawer.Screen
+              name="Veículos"
+              component={VehiclesScreen}
+              options={{
+                headerShown: false, // ou false, dependendo se você quer ou não o header
+                drawerLabel: () => null,
+                drawerItemStyle: { height: 0 },
+              }}
+            />
+            <Drawer.Screen
               name="Sair"
               component={LogoutScreen}
               options={{

@@ -26,7 +26,7 @@ export const styles = StyleSheet.create({
 
   text: {
     color: COLORS.white,
-    fontSize: FONT_SIZE.llg,
+    fontSize: FONT_SIZE.lg,
     fontWeight: "bold",
   },
 
@@ -141,7 +141,7 @@ export const styles = StyleSheet.create({
     position: "relative",
   },
   cartButton: {
-    padding: 8,
+    padding: 5,
   },
   cartBadge: {
     position: "absolute",

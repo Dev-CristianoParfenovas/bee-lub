@@ -47,14 +47,14 @@ function Products(props) {
 
   // Função para buscar os produtos da API
   const fetchProducts = async () => {
-    if (!authToken || !companyId) {
-      console.warn("Token ou Company ID ausente.");
+    if (!authToken) {
+      console.warn("Token ausente.");
       return;
     }
 
     try {
       setLoading(true); // Inicia o indicador de carregamento
-      const response = await api.get(`/products/${companyId}`, {
+      const response = await api.get(`/products`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 
@@ -313,6 +313,8 @@ function Products(props) {
                 {/* --- FIM DA MUDANÇA --- */}
               </TouchableOpacity>
             )}
+            showsVerticalScrollIndicator={false} // 👈 esconde a barra vertical
+            showsHorizontalScrollIndicator={false} // 👈 se for lista horizontal
           />
         )}
       </View>

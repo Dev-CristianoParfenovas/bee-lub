@@ -41,7 +41,7 @@ function CategoryRegistrationScreen(props) {
           return;
         }
 
-        const url = `/categories/${companyId}`;
+        const url = `/categories`;
         console.log("Company ID dentro de fetchCategories:", companyId);
         console.log("URL da API:", url);
 
@@ -80,7 +80,7 @@ function CategoryRegistrationScreen(props) {
       }
 
       // Adicione o company_id na URL
-      const url = `/categories/${categoryId}?company_id=${Number(companyId)}`;
+      const url = `/categories/${categoryId}`; //?company_id=${Number(companyId)}
       console.log("URL para deletar:", url);
 
       const response = await api.delete(url, {
@@ -145,7 +145,8 @@ function CategoryRegistrationScreen(props) {
       setLoading(true);
 
       try {
-        const token = await AsyncStorage.getItem("authToken"); // Recupera o token do AsyncStorage
+        const token = await AsyncStorage.getItem("authToken");
+
         if (!token) {
           Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
           return;
@@ -153,7 +154,7 @@ function CategoryRegistrationScreen(props) {
 
         const response = await api.post(
           "/categories",
-          { name, company_id: companyId, notification: isNotification },
+          { name, notification: isNotification },
           {
             headers: {
               Authorization: `Bearer ${token}`,

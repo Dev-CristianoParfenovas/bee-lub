@@ -157,7 +157,7 @@ const Payment = () => {
 
       console.log("Enviando dados da venda:", saleData);
 
-      const response = await api.post(`/sales/${companyId}`, saleData, {
+      const response = await api.post("/sales", saleData, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 

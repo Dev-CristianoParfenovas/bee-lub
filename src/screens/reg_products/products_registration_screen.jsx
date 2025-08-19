@@ -61,6 +61,40 @@ function ProductsRegistrationScreen() {
   const [refreshProducts, setRefreshProducts] = useState(false);
   const [productsLoading, setProductsLoading] = useState(true);
 
+  const decodeJWT = (token) => {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error("Token inválido:", e);
+      return null;
+    }
+  };
+
+  // Função para limpar os campos
+  const limpaCampos = () => {
+    setSelectedProductId(null);
+    setName("");
+    setPrice("");
+    setBarcode("");
+    setScannedCode("");
+    setNcm("");
+    setAliquota("");
+    setCfop("");
+    setCst("");
+    setCsosn("");
+    setQuantity("");
+    setSelectedCategory("");
+    setImageUri(null);
+  };
+
   // Função pra limpar da memoria  qdo tira foto pro produto
   const clearImageCache = async () => {
     try {
@@ -82,9 +116,9 @@ function ProductsRegistrationScreen() {
     }
   };
   // Função para buscar categorias
-  const fetchCategories = async (token, companyId) => {
+  const fetchCategories = async (token) => {
     try {
-      const url = `/categories/${companyId}`;
+      const url = "/categories";
       const response = await api.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -135,10 +169,21 @@ function ProductsRegistrationScreen() {
   };
 
   // Função para buscar produtos
-  const fetchProducts = async (token, companyId) => {
+  const fetchProducts = async (token) => {
     setProductsLoading(true);
+
+    // Decodificar token e verificar payload
+    const decoded = decodeJWT(token);
+    console.log("Payload do token:", decoded);
+
+    if (!decoded?.company_id) {
+      console.warn(
+        "Token não contém company_id. Pode ser token antigo ou inválido."
+      );
+    }
+
     try {
-      const response = await api.get(`/products/${companyId}`, {
+      const response = await api.get("/products", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -259,13 +304,13 @@ function ProductsRegistrationScreen() {
   const handleSearchProduct = debounce(async () => {
     if (!search.trim()) return; // Não faz a requisição se a busca estiver vazia
 
+    console.log("Search normal:", search);
+    console.log("Search trim:", search.trim());
+
     try {
-      const response = await api.get(
-        `/products/${companyId}?search=${search}`,
-        {
-          headers: { Authorization: `Bearer ${userToken}` },
-        }
-      );
+      const response = await api.get(`/products?search=${search}`, {
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
 
       console.log("Resposta da API: ", response.data);
 
@@ -290,251 +335,6 @@ function ProductsRegistrationScreen() {
     setSearch(text);
     handleSearchProduct(); // Chama a função de busca com debounce
   };
-
-  // Função de cadastro de produto
-  /* 310725 const handleCreateProduct = async () => {
-    if (!name || !price || !quantity || !selectedCategory) {
-      Alert.alert("Erro", "Todos os campos devem ser preenchidos.");
-      return;
-    }
-
-    if (isNaN(Number(price)) || isNaN(Number(quantity))) {
-      Alert.alert("Erro", "Preço e quantidade devem ser números válidos.");
-      return;
-    }
-
-    if (!companyId) {
-      Alert.alert("Erro", "ID da empresa não está definido.");
-      return;
-    }
-
-    try {
-      const token = await AsyncStorage.getItem("authToken");
-      if (!token) {
-        Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
-        return;
-      }
-
-      const formattedPrice = parseFloat(price.replace(",", "."));
-      const formattedQuantity = Number(quantity);
-
-      const formData = new FormData();
-
-      formData.append("id", selectedProductId || "");
-      formData.append("name", name);
-      formData.append("price", formattedPrice.toString());
-      formData.append("barcode", barcode);
-      formData.append("ncm", ncm);
-      formData.append("aliquota", aliquota);
-      formData.append("cfop", cfop);
-      formData.append("cst", cst);
-      formData.append("csosn", csosn);
-      formData.append("stock", formattedQuantity.toString());
-      formData.append("category_id", selectedCategory.toString());
-      formData.append("company_id", companyId.toString());
-
-      if (imageUri) {
-        const uriParts = imageUri.split(".");
-        const fileType = uriParts[uriParts.length - 1].toLowerCase();
-
-        const getMimeType = (ext) => {
-          if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
-          if (ext === "png") return "image/png";
-          if (ext === "webp") return "image/webp";
-          return `image/${ext}`;
-        };
-
-        let uri = imageUri;
-
-        if (Platform.OS === "ios") {
-          // Remove file:// se existir no iOS
-          if (uri.startsWith("file://")) {
-            uri = uri.replace("file://", "");
-          }
-        } else if (Platform.OS === "android") {
-          // Garante que tenha file:// no Android
-          if (!uri.startsWith("file://")) {
-            uri = "file://" + uri;
-          }
-        }
-
-        formData.append("image", {
-          uri,
-          name: `product_image.${fileType}`,
-          type: getMimeType(fileType),
-        });
-      }
-
-      console.log("Campos do FormData:");
-      console.log(formData._parts);
-
-      const response = await api.post("/products", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      console.log("Resposta completa da API:", response.data);
-      Alert.alert("Sucesso", response.data.message);
-
-      // Atualiza a lista de produtos após a criação
-
-      fetchProducts(token, companyId); // Forçar nova requisição para buscar todos os produtos
-      // Atualizando a lista de produtos
-      /* setProducts((prevProducts) => {
-          // Se o produto já existir na lista, substituímos
-          const updatedProducts = prevProducts.filter((item) => item.id !== id);
-          return [id, ...updatedProducts];
-        });*/
-  // Limpa os campos após sucesso
-  /* setSelectedProductId(null);
-      setName("");
-      setPrice("");
-      setBarcode("");
-      setScannedCode("");
-      setNcm("");
-      setAliquota("");
-      setCfop("");
-      setCst("");
-      setCsosn("");
-      setQuantity("");
-      setSelectedCategory("");
-      setRefreshProducts((prev) => !prev);
-    } catch (error) {
-      console.error("Erro na requisição:", {
-        message: error.message,
-        code: error.code,
-        config: error.config,
-        request: error.request,
-        response: error.response?.data,
-      });
-      const errorMessage =
-        error?.response?.data?.message ||
-        "Não foi possível cadastrar o produto.";
-      Alert.alert("Erro", errorMessage);
-    }
-  };*/
-
-  /* 020825 const handleCreateProduct = async () => {
-    if (!name || !price || !quantity || !selectedCategory) {
-      Alert.alert("Erro", "Todos os campos devem ser preenchidos.");
-      return;
-    }
-
-    try {
-      const token = await AsyncStorage.getItem("authToken");
-      if (!token) {
-        Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
-        return;
-      }
-
-      const formattedPrice = parseFloat(price.replace(",", "."));
-      const formattedQuantity = Number(quantity);
-
-      const productPayload = {
-        id: null,
-        name,
-        price: formattedPrice,
-        barcode,
-        ncm,
-        aliquota,
-        cfop,
-        cst,
-        csosn,
-        stock: formattedQuantity,
-        category_id: selectedCategory,
-        company_id: companyId,
-      };
-
-      const productResponse = await api.post("/products", productPayload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const createdProduct = productResponse.data.data || productResponse.data;
-      const productId = createdProduct.product?.id;
-      console.log("Produto criado:", createdProduct);
-
-      if (!productId) {
-        Alert.alert("Erro", "ID do produto criado não foi retornado.");
-        return;
-      }
-
-      let imageUrl = null;
-
-      if (imageUri) {
-        const uriParts = imageUri.split(".");
-        const fileType = uriParts[uriParts.length - 1].toLowerCase();
-
-        const getMimeType = (ext) => {
-          if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
-          if (ext === "png") return "image/png";
-          if (ext === "webp") return "image/webp";
-          return `image/${ext}`;
-        };
-
-        let uri = imageUri;
-        if (Platform.OS === "android" && !uri.startsWith("file://")) {
-          uri = "file://" + uri;
-        }
-
-        console.log("Image URI antes do upload:", uri);
-
-        const imageFormData = new FormData();
-        imageFormData.append("product_id", String(createdProduct.product.id));
-        imageFormData.append("company_id", String(companyId));
-        imageFormData.append("image", {
-          uri,
-          name: `product_image.${fileType}`,
-          type: getMimeType(fileType),
-        });
-
-        // Debug: listar tudo que está no FormData antes de enviar
-        for (let pair of imageFormData.entries()) {
-          console.log(pair[0], pair[1]);
-        }
-
-        const imageResponse = await api.post("/images", imageFormData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        console.log("Resposta upload imagem:", imageResponse.data);
-
-        imageUrl = imageResponse.data.image_url;
-
-        // Atualizar produto com image_url, se necessário
-        await api.put(
-          `/products/${createdProduct.id}`,
-          { image_url: imageUrl },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      }
-
-      Alert.alert("Sucesso", "Produto cadastrado com sucesso!");
-      fetchProducts(token, companyId);
-
-      // Limpar campos
-      setSelectedProductId(null);
-      setName("");
-      setPrice("");
-      setBarcode("");
-      setNcm("");
-      setAliquota("");
-      setCfop("");
-      setCst("");
-      setCsosn("");
-      setQuantity("");
-      setSelectedCategory("");
-      setImageUri(null);
-    } catch (error) {
-      console.error("Erro no cadastro do produto:", error);
-      Alert.alert(
-        "Erro",
-        error.response?.data?.message || "Não foi possível cadastrar o produto."
-      );
-    }
-  };*/
 
   const handleCreateProduct = async () => {
     if (!name || !price || !quantity || !selectedCategory) {
@@ -822,7 +622,13 @@ function ProductsRegistrationScreen() {
           </View>
           <View style={styles.containerbtnSearch}>
             <ButtonSearch text="Buscar" onPress={handleChangeSearch} />
-            <ButtonSearch text="Voltar lista" onPress={resetProductsList} />
+            <ButtonSearch
+              text="Voltar lista"
+              onPress={() => {
+                limpaCampos();
+                resetProductsList(); // aqui você volta para a lista
+              }}
+            />
           </View>
         </View>
 

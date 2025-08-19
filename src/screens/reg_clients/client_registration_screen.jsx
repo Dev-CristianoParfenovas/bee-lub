@@ -16,6 +16,7 @@ import images from "../../constants/icons.js";
 import api from "../../constants/api.js";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth, AuthProvider } from "../../context/AuthContext.jsx"; // Importa o AuthContext
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function ClientRegistrationScreen(props) {
   const { companyId } = useAuth(); // Acessa o company_id do AuthContext
@@ -61,13 +62,26 @@ function ClientRegistrationScreen(props) {
           company_id: companyId,
         });
 
-        const response = await api.post("/clients", {
-          name,
-          email,
-          phone,
-          password,
-          company_id: companyId,
-        });
+        const token = await AsyncStorage.getItem("authToken");
+        console.log("Token recuperado:", token);
+
+        if (!token) {
+          Alert.alert("Erro", "Usuário não autenticado.");
+          return;
+        }
+
+        const response = await api.post(
+          "/clients",
+          {
+            name,
+            email,
+            phone,
+            password,
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         console.log("Status da resposta:", response.status);
         console.log("Dados da resposta:", response.data);

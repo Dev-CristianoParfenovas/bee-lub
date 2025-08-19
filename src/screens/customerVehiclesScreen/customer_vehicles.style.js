@@ -31,6 +31,7 @@ export const styles = StyleSheet.create({
   selectedCard: {
     borderColor: COLORS.gray5,
     borderWidth: 2,
+    backgroundColor: COLORS.bluebtnsmall, // destaque quando selecionado
   },
   vehicleText: {
     fontSize: 16,

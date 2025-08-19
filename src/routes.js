@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Login from "./screens/login/login.jsx";
 import Account from "./screens/account/account.jsx";
-import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import SplashScreen from "./screens/splash_screen/splash_screen.jsx";
 

@@ -72,14 +72,24 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 5,
     paddingVertical: 10,
+    paddingHorizontal: 10, // 👈 afastar dos cantos
     borderBottomWidth: 1,
     borderBottomColor: COLORS.gray3, // Separador entre itens
   },
   itemName: {
+    flex: 1, // 👈 ocupa espaço restante
     fontSize: FONT_SIZE.xsm,
     color: COLORS.black,
   },
+  itemQuantity: {
+    width: 50, // 👈 largura fixa para alinhar bem
+    textAlign: "center",
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.black,
+  },
   itemPrice: {
+    width: 90, // 👈 largura fixa para alinhar valores
+    textAlign: "right",
     fontSize: FONT_SIZE.sm,
     color: COLORS.black,
   },
@@ -116,5 +126,46 @@ export const styles = StyleSheet.create({
     color: "white", // Cor do texto
     fontSize: FONT_SIZE.md, // Tamanho da fonte (faça referência ao seu arquivo de fontes)
     fontWeight: "bold", // Peso da fonte (opcional)
+  },
+  totalContainer: {
+    marginTop: 15,
+    paddingVertical: 10,
+    // borderTopWidth: 1,
+    // borderTopColor: COLORS.gray3,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  totalText: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: "bold",
+    color: COLORS.black,
+  },
+  totalValue: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: "bold",
+    color: COLORS.bluebtn,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 15,
+    backgroundColor: COLORS.lightGray,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.gray3,
+  },
+  footerText: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: "bold",
+    color: COLORS.black,
+  },
+  footerValue: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: "bold",
+    color: COLORS.blueprincipal,
+  },
+  emptyMessage: {
+    textAlign: "center",
   },
 });

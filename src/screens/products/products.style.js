@@ -40,12 +40,12 @@ export const styles = StyleSheet.create({
     position: "relative",
   },
   cartButton: {
-    padding: 8,
+    padding: 5,
   },
   cartBadge: {
     position: "absolute",
     top: -6, // Ajuste para alinhar melhor
-    right: -6, // Posicionado no canto do botão
+    right: -5, // Posicionado no canto do botão
     backgroundColor: COLORS.red, // Cor de fundo visível
     borderRadius: 10, // Torna o badge circular
     minWidth: 20, // Largura mínima para acomodar o texto

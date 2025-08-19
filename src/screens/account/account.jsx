@@ -142,7 +142,7 @@ function Account(props) {
     <View style={styles.container}>
       {/* Marca d'água */}
       <Image
-        source={images.beelogin}
+        source={images.beetransp}
         style={styles.watermark}
         resizeMode="contain"
         opacity={0.1} // Ajuste para o efeito de marca d'água

@@ -59,7 +59,7 @@ function Vehicle(props) {
         return;
       }
 
-      const response = await api.get(`/clients/${companyId}`, {
+      const response = await api.get("/clients", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -94,7 +94,7 @@ function Vehicle(props) {
         return;
       }
 
-      const response = await api.get(`/vehicles/${companyId}/${clientId}`, {
+      const response = await api.get(`/vehicles/${clientId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
