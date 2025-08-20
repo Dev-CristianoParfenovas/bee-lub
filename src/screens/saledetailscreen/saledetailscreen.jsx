@@ -14,6 +14,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import api from "../../constants/api.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { styles } from "./saledetailscreen.js";
+import { ScrollView } from "react-native-gesture-handler";
 
 //FUNÇÃO PARA FORMATAR DATAS
 function formatDate(dateString) {
@@ -37,15 +38,16 @@ export default function SalesDetailScreen({ route }) {
     endDate,
   } = route.params;
 
+  const [loadingSalesDetail, setLoadingSalesDetail] = useState(false);
   const formattedStartDate = formatDate(startDate);
   const formattedEndDate = formatDate(endDate);
 
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const { authToken } = useAuth();
   const navigation = useNavigation();
 
   const fetchProducts = async () => {
+    setLoadingSalesDetail(true);
     try {
       const response = await api.get(`/sales/products-by-sale/${saleGroupId}`, {
         headers: {
@@ -60,7 +62,7 @@ export default function SalesDetailScreen({ route }) {
     } catch (error) {
       console.error("Erro ao buscar produtos da venda:", error);
     } finally {
-      setLoading(false);
+      setLoadingSalesDetail(false);
     }
   };
 
@@ -120,6 +122,7 @@ export default function SalesDetailScreen({ route }) {
 
   return (
     <View style={styles.container}>
+      {/* Banner fixo */}
       <View style={styles.containerbanner}>
         <TouchableOpacity
           style={styles.backButton}
@@ -131,34 +134,44 @@ export default function SalesDetailScreen({ route }) {
         <Text style={styles.text}> Detalhe de Vendas</Text>
       </View>
 
-      {loading ? (
-        <ActivityIndicator size="large" />
+      {loadingSalesDetail ? (
+        <View style={styles.carregandoTela}>
+          <ActivityIndicator size="large" color="#2e3192" />
+          <Text style={styles.textCarregando}>Carregando...</Text>
+        </View>
       ) : (
-        <View>
-          <View style={styles.containerdados}>
-            <Text style={{ fontWeight: "bold" }}>
-              Funcionário: {employeeName || "N/A"}
-            </Text>
-            <Text style={{ fontWeight: "bold" }}>
-              Cliente: {clientName || "N/A"}
-            </Text>
-            <Text style={{ fontWeight: "bold" }}>
-              Veículo: {vehiclePlate || "N/A"} - {vehicleModel || "N/A"}
-            </Text>
-            <Text style={{ fontWeight: "bold" }}>
-              Período: {new Date(startDate).toLocaleDateString("pt-BR")} até{" "}
-              {new Date(endDate).toLocaleDateString("pt-BR")}
-            </Text>
+        <>
+          {/* Área rolável */}
+          <View style={styles.contentContainer}>
+            <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+              <View style={styles.containerdados}>
+                <Text style={{ fontWeight: "bold" }}>
+                  Funcionário: {employeeName || "N/A"}
+                </Text>
+                <Text style={{ fontWeight: "bold" }}>
+                  Cliente: {clientName || "N/A"}
+                </Text>
+                <Text style={{ fontWeight: "bold" }}>
+                  Veículo: {vehiclePlate || "N/A"} - {vehicleModel || "N/A"}
+                </Text>
+                <Text style={{ fontWeight: "bold" }}>
+                  Período: {new Date(startDate).toLocaleDateString("pt-BR")} até{" "}
+                  {new Date(endDate).toLocaleDateString("pt-BR")}
+                </Text>
+              </View>
+
+              <View style={styles.containerproducts}>
+                <FlatList
+                  data={products}
+                  keyExtractor={(item, index) => String(index)}
+                  renderItem={renderItem}
+                  scrollEnabled={false} // deixa rolagem pro ScrollView
+                />
+              </View>
+            </ScrollView>
           </View>
 
-          <View style={styles.containerproducts}>
-            <FlatList
-              data={products}
-              keyExtractor={(item, index) => String(index)}
-              renderItem={renderItem}
-            />
-          </View>
-
+          {/* Rodapé fixo */}
           <View style={styles.footer}>
             <Text style={styles.totalVenda}>
               Total da Venda: R$ {totalGeral.toFixed(2)}
@@ -170,7 +183,7 @@ export default function SalesDetailScreen({ route }) {
               <Text style={styles.buttonPDFText}>Gerar PDF</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </>
       )}
     </View>
   );

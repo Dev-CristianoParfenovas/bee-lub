@@ -114,4 +114,12 @@ export const styles = StyleSheet.create({
     padding: 5, // Expande a área clicável ao redor do Switch
     borderRadius: 10, // Suaviza os cantos (opcional)
   },
+  carregandoTela: {
+    marginTop: 70,
+    alignItems: "center",
+  },
+  textCarregando: {
+    marginTop: 10,
+    color: COLORS.white,
+  },
 });

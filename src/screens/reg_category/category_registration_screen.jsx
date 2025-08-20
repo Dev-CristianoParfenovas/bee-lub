@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   FlatList,
   Switch,
+  ActivityIndicator,
 } from "react-native";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons"; // Biblioteca de ícones
 import icons from "../../constants/icons.js";
@@ -24,6 +25,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"; // ou outr
 function CategoryRegistrationScreen(props) {
   const { companyId } = useAuth(); // Acessando o companyId do contexto
   const [name, setName] = useState("");
+  const [loadingCategories, setLoadingCategories] = useState(false);
   const [isNotification, setIsNotification] = useState(false);
   const [errors, setErrors] = useState({ name: "" });
   const [categories, setCategories] = useState([]);
@@ -33,11 +35,13 @@ function CategoryRegistrationScreen(props) {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        setLoadingCategories(true);
         const token = await AsyncStorage.getItem("authToken");
         console.log("Token recuperado:", token);
 
         if (!token) {
           Alert.alert("Erro", "Usuário não autenticado.");
+          setLoadingCategories(false);
           return;
         }
 
@@ -59,6 +63,8 @@ function CategoryRegistrationScreen(props) {
           "Erro ao buscar categorias:",
           error.response?.data || error.message
         );
+      } finally {
+        setLoadingCategories(false); // ✅ garante que o loading pare sempre
       }
     };
 
@@ -103,6 +109,8 @@ function CategoryRegistrationScreen(props) {
           error.message ||
           "Não foi possível excluir a categoria."
       );
+    } finally {
+      setLoadingCategories(false); // finaliza sempre
     }
   };
 
@@ -244,32 +252,38 @@ function CategoryRegistrationScreen(props) {
         onPress={handleCreateCategory}
         loading={loading}
       />
-
-      <FlatList
-        data={categories}
-        keyExtractor={(item, index) =>
-          item.id ? item.id.toString() : `key-${index}`
-        } // Garantir chave única
-        // scrollEnabled={true} // Desativa a rolagem
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <View style={styles.categoryItem}>
-            <TouchableOpacity onPress={() => setName(item.name)}>
-              <Text
-                style={[
-                  styles.categoryName,
-                  item.notification && { color: COLORS.yellowbee }, // ou use '#FFD700'
-                ]}
-              >
-                {item.name}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleDeleteCategory(item.id)}>
-              <FontAwesome name="trash" size={24} color={COLORS.red} />
-            </TouchableOpacity>
-          </View>
-        )}
-      />
+      {loadingCategories ? (
+        <View style={styles.carregandoTela}>
+          <ActivityIndicator size="large" color="#0000ff" />
+          <Text style={styles.textCarregando}>Carregando...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={categories}
+          keyExtractor={(item, index) =>
+            item.id ? item.id.toString() : `key-${index}`
+          } // Garantir chave única
+          // scrollEnabled={true} // Desativa a rolagem
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <View style={styles.categoryItem}>
+              <TouchableOpacity onPress={() => setName(item.name)}>
+                <Text
+                  style={[
+                    styles.categoryName,
+                    item.notification && { color: COLORS.yellowbee }, // ou use '#FFD700'
+                  ]}
+                >
+                  {item.name}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handleDeleteCategory(item.id)}>
+                <FontAwesome name="trash" size={24} color={COLORS.red} />
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+      )}
     </View>
   );
 }

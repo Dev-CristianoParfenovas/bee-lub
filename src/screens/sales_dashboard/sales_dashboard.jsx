@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
-  TextInput,
+  ActivityIndicator,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { styles } from "./sales_dashboard.style.js";
@@ -34,6 +34,7 @@ const SalesDashboard = () => {
   const [employees, setEmployees] = useState([]);
   const [clients, setClients] = useState([]);
   const [clientsError, setClientsError] = useState(false);
+  const [loadingSales, setLoadingSales] = useState(false);
   const [sales, setSales] = useState([]);
   const [idsales, setIdSales] = useState();
   const { userName, companyId, authToken, employeeId } = useAuth();
@@ -201,6 +202,8 @@ const SalesDashboard = () => {
   };*/
 
   const fetchSales = async ({ clientId, employeeId, vehicleId }) => {
+    // 1. Ativa o estado de carregamento no início da função
+    setLoadingSales(true);
     try {
       const startOfDay = new Date(startDate);
       startOfDay.setUTCHours(0, 0, 0, 0);
@@ -248,6 +251,10 @@ const SalesDashboard = () => {
     } catch (error) {
       console.error("Erro ao buscar vendas:", error);
       setFilteredData([]);
+    } finally {
+      // 2. Desativa o estado de carregamento no final,
+      // garantindo que ele seja desativado em qualquer cenário (sucesso ou erro)
+      setLoadingSales(false);
     }
   };
 
@@ -491,69 +498,84 @@ const SalesDashboard = () => {
         </View>
       </View>
 
-      <View style={styles.orderSummary}>
-        <FlatList
-          data={filteredData}
-          keyExtractor={(item) => String(item.employeeId)}
-          renderItem={({ item }) => (
-            <View style={styles.itemRow}>
-              <Text style={styles.itemName}>
-                {item.name || "Nome não disponível"}
-              </Text>
-              <Text style={styles.itemPrice}>
-                R$ {item.totalSales.toFixed(2)}
-              </Text>
-
-              <TouchableOpacity
-                style={styles.detailButton}
-                onPress={() => {
-                  const firstSale = allSales.find(
-                    (sale) => sale.employee_id === item.employeeId
-                  );
-
-                  if (firstSale) {
-                    console.log("firstSale completo:", firstSale);
-
-                    console.log(
-                      "sale_group_id encontrado:",
-                      firstSale.sale_group_id
-                    );
-
-                    if (!isValidUUID(firstSale.sale_group_id)) {
-                      alert("ID da venda inválido.");
-                      return;
-                    }
-
-                    navigation.navigate("SaleDetail", {
-                      saleGroupId: firstSale.sale_group_id,
-                      companyId,
-                      startDate: startDate.toISOString(),
-                      endDate: endDate.toISOString(),
-                      employeeName: item.name,
-                      clientName: selectedClientName,
-                      vehiclePlate: selectedVehiclePlate,
-                      vehicleModel:
-                        firstSale.vehicle_model &&
-                        firstSale.vehicle_model.trim() !== ""
-                          ? firstSale.vehicle_model
-                          : "Modelo não informado",
-                    });
-                  } else {
-                    alert("Nenhuma venda encontrada para este funcionário.");
-                  }
-                }}
-              >
-                <Text style={styles.detailButtonText}>Ver Detalhes</Text>
-              </TouchableOpacity>
+      <View style={styles.containervendas}>
+        <View style={styles.orderSummary}>
+          {loadingSales ? (
+            <View style={styles.carregandoTela}>
+              <ActivityIndicator size="large" color="#2e3192" />
+              <Text style={styles.textCarregando}>Carregando...</Text>
             </View>
+          ) : (
+            <FlatList
+              data={filteredData}
+              keyExtractor={(item) => String(item.employeeId)}
+              showsVerticalScrollIndicator={false} // remove a barra de rolagem
+              contentContainerStyle={{
+                paddingBottom: 20,
+              }}
+              renderItem={({ item }) => (
+                <View style={styles.itemRow}>
+                  <Text style={styles.itemName}>
+                    {item.name || "Nome não disponível"}
+                  </Text>
+                  <Text style={styles.itemPrice}>
+                    R$ {item.totalSales.toFixed(2)}
+                  </Text>
+
+                  <TouchableOpacity
+                    style={styles.detailButton}
+                    onPress={() => {
+                      const firstSale = allSales.find(
+                        (sale) => sale.employee_id === item.employeeId
+                      );
+
+                      if (firstSale) {
+                        console.log("firstSale completo:", firstSale);
+
+                        console.log(
+                          "sale_group_id encontrado:",
+                          firstSale.sale_group_id
+                        );
+
+                        if (!isValidUUID(firstSale.sale_group_id)) {
+                          alert("ID da venda inválido.");
+                          return;
+                        }
+
+                        navigation.navigate("SaleDetail", {
+                          saleGroupId: firstSale.sale_group_id,
+                          companyId,
+                          startDate: startDate.toISOString(),
+                          endDate: endDate.toISOString(),
+                          employeeName: item.name,
+                          clientName: selectedClientName,
+                          vehiclePlate: selectedVehiclePlate,
+                          vehicleModel:
+                            firstSale.vehicle_model &&
+                            firstSale.vehicle_model.trim() !== ""
+                              ? firstSale.vehicle_model
+                              : "Modelo não informado",
+                        });
+                      } else {
+                        alert(
+                          "Nenhuma venda encontrada para este funcionário."
+                        );
+                      }
+                    }}
+                  >
+                    <Text style={styles.detailButtonText}>Ver Detalhes</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              ListEmptyComponent={() => (
+                <Text style={styles.emptyMessage}>
+                  Nenhum funcionário ou cliente encontrado para o período
+                  selecionado.
+                </Text>
+              )}
+            />
           )}
-          ListEmptyComponent={() => (
-            <Text style={styles.emptyMessage}>
-              Nenhum funcionário ou cliente encontrado para o período
-              selecionado.
-            </Text>
-          )}
-        />
+        </View>
       </View>
     </View>
   );

@@ -6,7 +6,7 @@ import {
   Image,
   Alert,
   FlatList,
-  ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -33,7 +33,10 @@ function Vehicle(props) {
   const { customerId } = route.params || {};
 
   const [clients, setClients] = useState([]);
-  const [selectedClientId, setSelectedClientId] = useState(customerId || "");
+  const [selectedClientId, setSelectedClientId] = useState(
+    String(customerId || "")
+  );
+  const [loadingVehicles, setLoadingVehicles] = useState(false);
   const [clientsError, setClientsError] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -82,8 +85,13 @@ function Vehicle(props) {
 
   // Buscar veículos do cliente selecionado
   const fetchVehicles = async (clientId) => {
+    setLoadingVehicles(true);
     if (!clientId) {
       setVehicles([]);
+      // Adiciona um pequeno delay antes de desligar o carregamento
+      setTimeout(() => {
+        setLoadingVehicles(false);
+      }, 500); // 500ms de delay
       return;
     }
 
@@ -91,6 +99,9 @@ function Vehicle(props) {
       const token = await AsyncStorage.getItem("authToken");
       if (!token) {
         Alert.alert("Erro", "Token não encontrado.");
+        setTimeout(() => {
+          setLoadingVehicles(false);
+        }, 500);
         return;
       }
 
@@ -110,11 +121,16 @@ function Vehicle(props) {
     } catch (error) {
       console.error("Erro ao buscar veículos:", error);
       Alert.alert("Erro", "Não foi possível carregar os veículos.");
+    } finally {
+      // Adiciona o delay aqui também para garantir a visualização
+      setTimeout(() => {
+        setLoadingVehicles(false);
+      }, 500); // 500ms de delay
     }
   };
 
   // Limpar picker ao entrar e sair da tela
-  useFocusEffect(
+  /*useFocusEffect(
     React.useCallback(() => {
       // Se veio customerId por parâmetro, já setar como selecionado
       if (!customerId) {
@@ -125,6 +141,14 @@ function Vehicle(props) {
         setSelectedClientId("");
       };
     }, [customerId])
+  );*/
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // Ao entrar na tela, sempre limpe o estado. Isso força o `useEffect`
+      // a ser ativado e limpar a lista.
+      setSelectedClientId("");
+    }, [])
   );
 
   // Buscar clientes na montagem do componente e quando companyId mudar
@@ -303,7 +327,16 @@ function Vehicle(props) {
           <Picker
             style={styles.picker}
             selectedValue={selectedClientId}
-            onValueChange={(itemValue) => setSelectedClientId(itemValue)}
+            onValueChange={(itemValue) => {
+              // Primeiro, atualize o estado para que o Picker mostre a opção correta.
+              setSelectedClientId(itemValue);
+
+              // Agora, verifique o itemValue recebido para limpar a lista,
+              // garantindo que a ação seja executada imediatamente.
+              if (itemValue === "") {
+                setVehicles([]);
+              }
+            }}
           >
             <Picker.Item label="Selecione um cliente..." value="" />
             {clientsError ? (
@@ -317,7 +350,7 @@ function Vehicle(props) {
                 <Picker.Item
                   key={`client-${client.id_client}`}
                   label={client.name}
-                  value={client.id_client}
+                  value={client.id_client.toString()}
                 />
               ))
             )}
@@ -386,37 +419,46 @@ function Vehicle(props) {
       {/* Lista de veículos */}
 
       <View style={{ flex: 1 }}>
-        <FlatList
-          data={vehicles}
-          keyExtractor={(item) =>
-            (item.id_vehicle || item.id || Math.random()).toString()
-          }
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={() => (
-            <Text
-              style={{
-                textAlign: "center",
-                marginTop: 20,
-                color: COLORS.gray3,
-              }}
-            >
-              Nenhum veículo cadastrado.
-            </Text>
-          )}
-          renderItem={({ item }) => (
-            <View style={styles.categoryItem}>
-              <Text style={styles.categoryName}>
-                {item.model} - {item.license_plate}
-              </Text>
-              <TouchableOpacity
-                onPress={() => handleDeleteVehicle(item.id_vehicle || item.id)}
+        {loadingVehicles ? (
+          <View style={styles.carregandoTela}>
+            <ActivityIndicator size="large" color="#FFFFFF" />
+            <Text style={styles.textCarregando}>Carregando...</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={vehicles}
+            keyExtractor={(item) =>
+              (item.id_vehicle || item.id || Math.random()).toString()
+            }
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={() => (
+              <Text
+                style={{
+                  textAlign: "center",
+                  marginTop: 20,
+                  color: COLORS.gray3,
+                }}
               >
-                <FontAwesome name="trash" size={24} color={COLORS.red} />
-              </TouchableOpacity>
-            </View>
-          )}
-        />
+                Nenhum veículo cadastrado.
+              </Text>
+            )}
+            renderItem={({ item }) => (
+              <View style={styles.categoryItem}>
+                <Text style={styles.categoryName}>
+                  {item.model} - {item.license_plate}
+                </Text>
+                <TouchableOpacity
+                  onPress={() =>
+                    handleDeleteVehicle(item.id_vehicle || item.id)
+                  }
+                >
+                  <FontAwesome name="trash" size={24} color={COLORS.red} />
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+        )}
       </View>
     </View>
   );

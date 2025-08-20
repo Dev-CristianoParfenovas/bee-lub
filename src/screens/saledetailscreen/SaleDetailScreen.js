@@ -75,4 +75,8 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
+  carregandoTela: {
+    marginTop: 250,
+    alignItems: "center",
+  },
 });

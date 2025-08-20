@@ -149,4 +149,12 @@ export const styles = StyleSheet.create({
     height: "100%",
     justifyContent: "center",
   },
+  carregandoTela: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  textCarregando: {
+    marginTop: 10,
+    color: COLORS.white,
+  },
 });

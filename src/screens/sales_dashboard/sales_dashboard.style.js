@@ -26,6 +26,9 @@ export const styles = StyleSheet.create({
     marginBottom: 5,
     backgroundColor: COLORS.gray5,
   },
+  containervendas: {
+    flex: 1,
+  },
   watermark: {
     position: "absolute",
     width: 350,
@@ -152,5 +155,9 @@ export const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
     fontWeight: "bold",
+  },
+  carregandoTela: {
+    marginTop: 70,
+    alignItems: "center",
   },
 });
