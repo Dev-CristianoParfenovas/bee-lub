@@ -101,4 +101,9 @@ export const styles = StyleSheet.create({
     color: "#555",
     marginTop: 4,
   },
+  employeePhone: {
+    fontSize: 14,
+    color: "#777", // Uma cor um pouco mais clara
+    marginTop: 2, // Uma pequena margem superior
+  },
 });

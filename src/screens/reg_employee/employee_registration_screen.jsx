@@ -8,6 +8,7 @@ import {
   validateEmail,
   validatePassword,
   validateName,
+  validatePhone,
 } from "../../utils/validators.js";
 import { COLORS } from "../../constants/theme.js";
 import TextBox from "../../components/textbox/textbox.jsx";
@@ -21,6 +22,7 @@ function EmployeeRegistrationScreen(props) {
   console.log("Company ID do Emplooyee registration:", companyId); // Deve exibir o ID no console
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({ name: "", email: "", password: "" });
@@ -29,16 +31,18 @@ function EmployeeRegistrationScreen(props) {
   const handleCreateEmployee = async () => {
     // Valida os campos de entrada
     const nameError = validateName(name);
+    const phoneError = validatePhone(phone);
     const emailError = validateEmail(email);
     const passwordError = validatePassword(password);
 
     setErrors({
       name: nameError,
       email: emailError,
+      phone: phoneError,
       password: passwordError,
     });
 
-    if (!nameError && !emailError && !passwordError) {
+    if (!nameError && !emailError && !passwordError && !phoneError) {
       if (!companyId) {
         Alert.alert("Erro", "ID da empresa não está definido.");
         return;
@@ -50,6 +54,7 @@ function EmployeeRegistrationScreen(props) {
         console.log("Enviando dados para API:", {
           name,
           email,
+          phone,
           password,
           company_id: companyId,
         });
@@ -57,6 +62,7 @@ function EmployeeRegistrationScreen(props) {
         const response = await api.post("/employees", {
           name,
           email,
+          phone,
           password,
           company_id: companyId,
         });
@@ -75,10 +81,12 @@ function EmployeeRegistrationScreen(props) {
           // Limpa os campos do formulário após o cadastro com sucesso
           setName("");
           setEmail("");
+          setPhone("");
           setPassword("");
           setErrors({
             name: "",
             email: "",
+            phone: "",
             password: "",
           });
           setLoading(false);
@@ -98,6 +106,9 @@ function EmployeeRegistrationScreen(props) {
         const errorMessage =
           error.response?.data?.message || "Erro desconhecido.";
         Alert.alert("Erro", errorMessage);
+      } finally {
+        // 3. Garante que o carregamento seja desativado, independente do resultado
+        setLoading(false);
       }
     } else {
       Alert.alert("Erro", "Por favor, corrija os erros antes de continuar.");
@@ -169,6 +180,23 @@ function EmployeeRegistrationScreen(props) {
               <Text style={styles.errorText}>{errors.email}</Text>
             ) : null}
           </View>
+          {/*Campo Telefone*/}
+          <View style={styles.containerInput}>
+            <View style={styles.inputWithIcon}>
+              <MaterialIcons name="phone" size={24} color={COLORS.gray3} />
+              <TextBox
+                placeholder="Telefone"
+                placeholderTextColor={COLORS.gray3} // Cor do texto placeholder
+                style={[styles.input, errors.phone ? styles.inputError : null]}
+                value={phone}
+                onChangeText={(text) => setPhone(text)}
+                maskType="phone"
+              />
+            </View>
+            {errors.phone ? (
+              <Text style={styles.errorText}>{errors.phone}</Text>
+            ) : null}
+          </View>
           {/*Campo Senha*/}
           <View style={styles.containerInput}>
             <View style={styles.inputWithIcon}>
@@ -193,6 +221,7 @@ function EmployeeRegistrationScreen(props) {
             text="Criar Conta"
             onPress={handleCreateEmployee}
             loading={loading}
+            disabled={loading}
           />
         </View>
       </View>

@@ -157,4 +157,39 @@ export const styles = StyleSheet.create({
     marginTop: 10,
     color: COLORS.white,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)", // fundo escurecido
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    maxHeight: "50%",
+    width: "85%",
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    padding: 20,
+    // Remova 'maxHeight' daqui
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    flexDirection: "column",
+  },
+  modalList: {
+    flexGrow: 1, // Permite que a FlatList ocupe o espaço disponível e role
+    marginBottom: 10, // Adiciona uma pequena margem para separar do botão "Fechar"
+  },
+  modalItem: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray3,
+  },
+  pickerButton: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    height: "100%",
+  },
 });

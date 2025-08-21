@@ -24,12 +24,12 @@ function ClientRegistrationScreen(props) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({
     name: "",
     email: "",
     phone: "",
-    password: "",
   });
   const navigation = useNavigation(); // Hook para acessar a navegação
 
@@ -38,27 +38,30 @@ function ClientRegistrationScreen(props) {
     const nameError = validateName(name);
     const emailError = validateEmail(email);
     const phoneError = validatePhone(phone);
-    const passwordError = validatePassword(password);
 
     setErrors({
       name: nameError,
       email: emailError,
       phone: phoneError,
-      password: passwordError,
     });
 
-    if (!nameError && !emailError && !passwordError) {
+    if (!nameError && !emailError) {
       if (!companyId) {
         Alert.alert("Erro", "ID da empresa não está definido.");
         return;
       }
+      // Ativa o estado de carregamento
+      setLoading(true);
+
+      // AQUI: Declare a variável generatedPassword antes de usá-la
+      const generatedPassword = Math.random().toString(36).substring(2, 10);
 
       try {
         console.log("Enviando dados para API:", {
           name,
           email,
           phone,
-          password,
+          password: generatedPassword, // Usa a senha gerada
           company_id: companyId,
         });
 
@@ -67,6 +70,7 @@ function ClientRegistrationScreen(props) {
 
         if (!token) {
           Alert.alert("Erro", "Usuário não autenticado.");
+          setLoading(false);
           return;
         }
 
@@ -76,7 +80,7 @@ function ClientRegistrationScreen(props) {
             name,
             email,
             phone,
-            password,
+            password: generatedPassword,
           },
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -99,7 +103,6 @@ function ClientRegistrationScreen(props) {
           setName("");
           setEmail("");
           setPhone("");
-          setPassword("");
           setErrors({
             name: "",
             email: "",
@@ -122,6 +125,9 @@ function ClientRegistrationScreen(props) {
         const errorMessage =
           error.response?.data?.message || "Erro desconhecido.";
         Alert.alert("Erro", errorMessage);
+      } finally {
+        // Desativa o estado de carregamento no final da requisição
+        setLoading(false);
       }
     } else {
       Alert.alert("Erro", "Por favor, corrija os erros antes de continuar.");
@@ -209,27 +215,13 @@ function ClientRegistrationScreen(props) {
               <Text style={styles.errorText}>{errors.phone}</Text>
             ) : null}
           </View>
-          {/*Campo Senha*/}
-          <View style={styles.containerInput}>
-            <View style={styles.inputWithIcon}>
-              <FontAwesome name="lock" size={24} color={COLORS.gray3} />
-              <TextBox
-                placeholder="Senha"
-                isPassword={true}
-                value={password}
-                onChangeText={(text) => setPassword(text)}
-                style={[
-                  styles.input,
-                  errors.password ? styles.inputError : null,
-                ]}
-              />
-            </View>
-            {errors.password ? (
-              <Text style={styles.errorText}>{errors.password}</Text>
-            ) : null}
-          </View>
 
-          <Button text="Criar Cliente" onPress={handleCreateClient} />
+          <Button
+            text="Criar Cliente"
+            onPress={handleCreateClient}
+            loading={loading} // Exibe o indicador de carregamento
+            disabled={loading} // Desabilita o botão para evitar cliques múltiplos
+          />
         </View>
       </View>
     </AuthProvider>

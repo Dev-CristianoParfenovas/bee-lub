@@ -59,6 +59,10 @@ function EmployeeList() {
   const renderEmployee = ({ item }) => (
     <View style={styles.employeeItem}>
       <Text style={styles.employeeName}>{item.name}</Text>
+      {/* Renderização Condicional para o telefone */}
+      {item.phone ? (
+        <Text style={styles.employeePhone}>{item.phone}</Text>
+      ) : null}
       <Text style={styles.employeeEmail}>{item.email}</Text>
     </View>
   );

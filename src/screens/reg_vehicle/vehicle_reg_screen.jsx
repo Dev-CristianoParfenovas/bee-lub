@@ -7,6 +7,7 @@ import {
   Alert,
   FlatList,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -38,6 +39,7 @@ function Vehicle(props) {
   );
   const [loadingVehicles, setLoadingVehicles] = useState(false);
   const [clientsError, setClientsError] = useState(false);
+  const [showClientModal, setShowClientModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [name, setName] = useState("");
@@ -52,6 +54,47 @@ function Vehicle(props) {
     cor: "",
   });
   const [vehicles, setVehicles] = useState([]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // 1. Limpa o estado e os erros (boa prática ao focar na tela)
+      setSelectedClientId("");
+      setVehicles([]);
+      setClientsError(false);
+
+      // 2. Busca a lista de clientes novamente sempre que a tela for focada
+      if (companyId) {
+        fetchClients();
+      }
+    }, [companyId]) // A dependência [companyId] garante que a busca seja refeita se o ID mudar
+  );
+
+  /*useEffect(() => {
+    if (companyId) fetchClients();
+  }, [companyId]);*/
+
+  useEffect(() => {
+    setVehicles([]);
+    setLoadingVehicles(true);
+    if (selectedClientId) fetchVehicles(selectedClientId);
+    else setTimeout(() => setLoadingVehicles(false), 500);
+  }, [selectedClientId]);
+
+  const handlePickerChange = (itemValue) => {
+    const value = itemValue?.toString() || "";
+
+    if (value === "") {
+      // Forçar o estado para um valor temporário para "resetar" o picker
+      setSelectedClientId("temp");
+      setTimeout(() => {
+        setSelectedClientId("");
+        setVehicles([]);
+      }, 0);
+    } else {
+      setSelectedClientId(value);
+      fetchVehicles(value);
+    }
+  };
 
   // Buscar clientes
   const fetchClients = async () => {
@@ -128,44 +171,6 @@ function Vehicle(props) {
       }, 500); // 500ms de delay
     }
   };
-
-  // Limpar picker ao entrar e sair da tela
-  /*useFocusEffect(
-    React.useCallback(() => {
-      // Se veio customerId por parâmetro, já setar como selecionado
-      if (!customerId) {
-        setSelectedClientId("");
-      }
-
-      return () => {
-        setSelectedClientId("");
-      };
-    }, [customerId])
-  );*/
-
-  useFocusEffect(
-    React.useCallback(() => {
-      // Ao entrar na tela, sempre limpe o estado. Isso força o `useEffect`
-      // a ser ativado e limpar a lista.
-      setSelectedClientId("");
-    }, [])
-  );
-
-  // Buscar clientes na montagem do componente e quando companyId mudar
-  useEffect(() => {
-    if (companyId) {
-      fetchClients();
-    }
-  }, [companyId]);
-
-  // Buscar veículos quando selectedClientId mudar
-  useEffect(() => {
-    if (selectedClientId) {
-      fetchVehicles(selectedClientId);
-    } else {
-      setVehicles([]);
-    }
-  }, [selectedClientId]);
 
   // Validar campos antes de criar veículo
   const validateFields = () => {
@@ -284,6 +289,11 @@ function Vehicle(props) {
   );
   console.log("------------------------");
 
+  const handleClientSelect = (clientId) => {
+    setSelectedClientId(clientId); // "" limpará a lista
+    setShowClientModal(false);
+  };
+
   return (
     <View style={styles.container}>
       {/* Voltar */}
@@ -324,37 +334,55 @@ function Vehicle(props) {
       {/* Picker de Clientes */}
       <View style={styles.containerInput}>
         <View style={styles.containerfunc}>
-          <Picker
-            style={styles.picker}
-            selectedValue={selectedClientId}
-            onValueChange={(itemValue) => {
-              // Primeiro, atualize o estado para que o Picker mostre a opção correta.
-              setSelectedClientId(itemValue);
-
-              // Agora, verifique o itemValue recebido para limpar a lista,
-              // garantindo que a ação seja executada imediatamente.
-              if (itemValue === "") {
-                setVehicles([]);
-              }
-            }}
+          <TouchableOpacity
+            style={styles.pickerButton}
+            onPress={() => setShowClientModal(true)}
           >
-            <Picker.Item label="Selecione um cliente..." value="" />
-            {clientsError ? (
-              <Picker.Item
-                key="error"
-                label="Erro ao carregar clientes"
-                value=""
-              />
-            ) : (
-              clients.map((client) => (
-                <Picker.Item
-                  key={`client-${client.id_client}`}
-                  label={client.name}
-                  value={client.id_client.toString()}
+            <Text style={{ color: selectedClientId ? "#000" : "#999" }}>
+              {selectedClientId
+                ? clients.find(
+                    (c) => c.id_client.toString() === selectedClientId
+                  )?.name
+                : "Selecione um cliente..."}
+            </Text>
+            <MaterialIcons
+              name="arrow-drop-down"
+              size={24}
+              color={COLORS.gray3}
+            />
+          </TouchableOpacity>
+
+          <Modal visible={showClientModal} transparent animationType="slide">
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <FlatList
+                  style={styles.modalList}
+                  data={[
+                    { id_client: "", name: "Selecione um cliente..." },
+                    ...clients,
+                  ]}
+                  keyExtractor={(item) =>
+                    item.id_client.toString() || Math.random().toString()
+                  }
+                  showsVerticalScrollIndicator={false}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.modalItem}
+                      onPress={() =>
+                        handleClientSelect(item.id_client.toString())
+                      }
+                    >
+                      <Text>{item.name}</Text>
+                    </TouchableOpacity>
+                  )}
                 />
-              ))
-            )}
-          </Picker>
+                <Button
+                  text="Fechar"
+                  onPress={() => setShowClientModal(false)}
+                />
+              </View>
+            </View>
+          </Modal>
         </View>
 
         {/* Inputs do formulário */}
